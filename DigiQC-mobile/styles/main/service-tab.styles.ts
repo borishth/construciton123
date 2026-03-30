@@ -1,0 +1,42 @@
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+  container: { flex: 1 },
+  scroll: { paddingHorizontal: 20, paddingTop: 56, paddingBottom: 120 },
+  headerArea: { marginBottom: 24 },
+  pageTitle: { fontSize: 28, fontWeight: '800', marginBottom: 4 },
+  pageSubtitle: { fontSize: 14, fontWeight: '500' },
+  statsRow: { flexDirection: 'row', gap: 10, marginBottom: 20 },
+  statCard: { flex: 1, borderRadius: 16, padding: 16, alignItems: 'center', borderWidth: 1 },
+  statValue: { fontSize: 22, fontWeight: '800' },
+  statLabel: { fontSize: 9, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 },
+  newBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    borderRadius: 16, height: 52, marginBottom: 24,
+    elevation: 8, shadowColor: '#3b82f6', shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3, shadowRadius: 12,
+  },
+  newBtnText: { fontSize: 14, fontWeight: '700', color: '#fff' },
+  sectionLabel: { fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 14 },
+  card: { borderRadius: 18, padding: 16, marginBottom: 12, borderWidth: 1 },
+  cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 },
+  issueTitle: { fontSize: 14, fontWeight: '700', marginBottom: 4 },
+  issueId: { fontSize: 11, fontWeight: '600' },
+  badge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8 },
+  badgeText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
+  metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 14 },
+  metaChip: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  metaText: { fontSize: 11, fontWeight: '500' },
+  prioBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  prioText: { fontSize: 10, fontWeight: '800' },
+  advBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, alignSelf: 'flex-start',
+  },
+  advBtnText: { fontSize: 12, fontWeight: '700' },
+  doneTag: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, alignSelf: 'flex-start',
+  },
+  doneText: { fontSize: 12, fontWeight: '700' },
+});

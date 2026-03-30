@@ -1,0 +1,54 @@
+# Professional Backend Restructure Walkthrough
+
+I have successfully separated the backend logic from the mobile application frontend and organized it into a professional, scalable structure at the root of your project.
+
+## Changes Overview
+
+### 1. New Standalone Backend (`backend/`)
+The backend is built with **FastAPI** and follows a standard enterprise architecture:
+- **`app/models/`**: Pydantic schemas for data validation (Inspections, Service Requests).
+- **`app/services/`**: Data persistence layer with a centralized mock database.
+- **`app/controllers/`**: Business logic layer that coordinates service calls.
+- **`app/api/v1/endpoints/`**: RESTful API routes (`/inspections`, `/service-requests`).
+- **[main.py](file:///f:/DigiQC/backend/app/main.py)**: The main entry point with CORS enabled for mobile connectivity.
+
+### 2. Mobile App Integration (`DigiQC-mobile/`)
+- All local mock data in the UI has been removed.
+- **Services**: Updated [inspection.service.ts](file:///f:/DigiQC/DigiQC-mobile/services/inspection.service.ts) and [service-request.service.ts](file:///f:/DigiQC/DigiQC-mobile/services/service-request.service.ts) to use `fetch()` to communicate with the local backend.
+- **UI Components**: Refactored all main screens ([Inspections](file:///f:/DigiQC/DigiQC-mobile/app/inspections.tsx#18-28), [Reports](file:///f:/DigiQC/DigiQC-mobile/services/inspection.service.ts#19-23), [Service](file:///f:/DigiQC/DigiQC-mobile/app/service.tsx#9-10), `Checklists`, `Start Inspection`) to handle asynchronous data loading with loading indicators.
+- **Constants**: Centralized UI styling tokens into [constants/status-config.ts](file:///f:/DigiQC/DigiQC-mobile/constants/status-config.ts).
+
+## How to Run the Project
+
+### Phase 1: Start the Backend
+1. Open a terminal in the root `f:\DigiQC` directory.
+2. Activate your virtual environment: [.\venv\Scripts\activate](file:///f:/DigiQC/venv/Scripts/activate)
+3. Install dependencies: `pip install -r backend/requirements.txt`
+4. Run the server: `python backend/run.py`
+   - The API will be available at `http://localhost:8000`.
+   - You can view the automatic API documentation at `http://localhost:8000/docs`.
+
+### Phase 2: Start the Mobile App
+1. Open another terminal in `f:\DigiQC\DigiQC-mobile`.
+2. Run `npx expo start`.
+3. The app will now fetch data live from your new Python backend!
+
+## Final Project Structure
+
+```text
+f:\DigiQC\
+├── backend/
+│   ├── app/
+│   │   ├── api/v1/endpoints/        # API Routes
+│   │   ├── controllers/             # Business Logic
+│   │   ├── models/                  # Pydantic Schemas
+│   │   ├── services/                # Data Services & Mock DB
+│   │   └── main.py                  # Entry Point
+│   ├── requirements.txt
+│   └── run.py                       # Helper script
+├── DigiQC-mobile/
+│   ├── services/                    # API wrappers (fetch)
+│   ├── constants/                   # UI Constants
+│   └── app/                         # UI Components (async)
+└── venv/                            # Python environment
+```

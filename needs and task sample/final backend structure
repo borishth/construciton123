@@ -1,0 +1,46 @@
+# Walkthrough - Refactored FastAPI Backend
+
+The FastAPI backend has been refactored into a professional, modular structure that separates configuration, data models, external services, business logic, and API routes.
+
+## Changes Made
+
+### 1. Modular Structure
+The application now follows a clean separation of concerns:
+- **[app/core/config.py](file:///f:/DigiQC/backend/app/core/config.py)**: Centralized configuration using Pydantic Settings and [.env](file:///f:/DigiQC/backend/.env).
+- **`app/models/`**: Pydantic models for request/response schemas.
+- **`app/services/`**: Integration with external services like Supabase.
+- **`app/controllers/`**: Business logic and database interactions.
+- **`app/api/v1/endpoints/`**: API route definitions.
+- **[app/main.py](file:///f:/DigiQC/backend/app/main.py)**: Application entry point.
+
+### 2. Environment Configuration
+Environment variables such as `SUPABASE_URL` and `SUPABASE_KEY` are safely loaded from the [.env](file:///f:/DigiQC/backend/.env) file via [app/core/config.py](file:///f:/DigiQC/backend/app/core/config.py).
+
+### 3. Supabase Integration
+A dedicated [supabase_service.py](file:///f:/DigiQC/backend/app/services/supabase_service.py) initializes the client, which is then used by the controllers to perform CRUD operations.
+
+### 4. Absolute Imports
+All internal imports now use absolute paths (e.g., `from app.core import settings`), improving readability and avoiding circular dependency issues.
+
+## How to Run
+
+1. Navigate to the `backend` directory:
+   ```bash
+   cd backend
+   ```
+2. Start the development server:
+   ```bash
+   uvicorn app.main:app --reload
+   ```
+
+## API Endpoints Verified
+
+- `GET /api/v1/inspections`: Fetches all inspections from Supabase.
+- `POST /api/v1/inspections`: Creates a new inspection in Supabase.
+- `GET /api/v1/inspections/checklist-items`: Returns standard checklist items.
+
+## Implementation Details
+
+- **Controllers**: Handle all logic for talking to the database.
+- **Endpoints**: Act as thin wrappers around controller methods.
+- **Models**: Provide strong typing and validation for all API inputs and outputs.

@@ -1,0 +1,36 @@
+# Ingestion Pipeline Fixes and Verification
+
+I have fixed the "red lines" and execution errors in [f:\DigiQC\backend\app\ai\ingestion_pipeline.py](file:///f:/DigiQC/backend/app/ai/ingestion_pipeline.py).
+
+## Summary of Changes
+
+### 1. Fixed Syntax Error
+A missing closing parenthesis in the [create_vector_store](file:///f:/DigiQC/backend/app/ai/ingestion_pipeline.py#72-91) function was causing a syntax error on the subsequent `print` statement.
+
+### 2. Resolved Undefined Variable
+The `embedding_model` variable was being used in the [main](file:///f:/DigiQC/backend/app/ai/ingestion_pipeline.py#92-128) function before being defined. I have now initialized it at the beginning of [main](file:///f:/DigiQC/backend/app/ai/ingestion_pipeline.py#92-128) so it's available for both loading existing stores and creating new ones.
+
+### 3. Consolidated Duplicate Functions
+There were two definitions of [create_vector_store](file:///f:/DigiQC/backend/app/ai/ingestion_pipeline.py#72-91) with conflicting signatures. I consolidated them into a single, robust function.
+
+### 4. Updated Embedding Model
+I identified that `models/embedding-001` was not available for your API key. Through diagnostic testing, I confirmed that `models/gemini-embedding-001` is the correct working model and updated the script accordingly.
+
+## Verification Results
+
+The script now executes successfully without errors.
+
+```powershell
+(.venv) PS F:\DigiQC\backend> python app/ai/ingestion_pipeline.py
+=== RAG Document Ingestion Pipeline ===
+
+✅ Vector store already exists. No need to re-process documents.
+Loaded existing vector store with 0 documents
+```
+
+> [!NOTE]
+> The "0 documents" message indicates that while the vector store exists, it hasn't indexed any documents yet. If you add [.txt](file:///f:/DigiQC/backend/test_output.txt) files to your `docs` directory and delete the `db/chroma_db` folder, the script will re-process them.
+
+---
+**Files Modified:**
+- [ingestion_pipeline.py](file:///f:/DigiQC/backend/app/ai/ingestion_pipeline.py)

@@ -1,0 +1,28 @@
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+  container: { flex: 1 },
+  scroll: { paddingHorizontal: 20, paddingTop: 56, paddingBottom: 120 },
+  headerArea: { marginBottom: 28 },
+  pageTitle: { fontSize: 28, fontWeight: '800', marginBottom: 4 },
+  pageSubtitle: { fontSize: 14, fontWeight: '500' },
+  sectionLabel: { fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 14 },
+  actionRow: { flexDirection: 'row', gap: 12, marginBottom: 28 },
+  actionCard: { flex: 1, borderRadius: 20, padding: 20, borderWidth: 1 },
+  actionIcon: { width: 48, height: 48, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 14 },
+  actionTitle: { fontSize: 14, fontWeight: '700', marginBottom: 4 },
+  actionSub: { fontSize: 11, fontWeight: '500' },
+  sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
+  viewAllText: { fontWeight: '700', fontSize: 12 },
+  inspCard: { flexDirection: 'row', borderRadius: 18, marginBottom: 12, overflow: 'hidden', borderWidth: 1 },
+  inspAccent: { width: 4 },
+  inspBody: { flex: 1, padding: 16 },
+  inspTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
+  inspSite: { fontSize: 14, fontWeight: '700', marginBottom: 4 },
+  inspId: { fontSize: 11, fontWeight: '600' },
+  inspBadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8 },
+  inspBadgeText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
+  inspMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  inspMeta: { fontSize: 11, fontWeight: '500' },
+  metaDot: { width: 3, height: 3, borderRadius: 2, marginHorizontal: 4 },
+});

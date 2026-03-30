@@ -1,0 +1,40 @@
+# RAG System Refactor for Cost-Efficiency and Modularity
+
+This plan outlines the refactor of the existing RAG system to use free, local embeddings from HuggingFace and the Gemini API for final answer generation. The project will be restructured into clean, modular components.
+
+## Proposed Changes
+
+### 1. Ingestion Component
+- **[MODIFY] [ingestion_pipeline.py](file:///f:/DigiQC/backend/app/ai/ingestion_pipeline.py)**:
+    - Replace `GoogleGenerativeAIEmbeddings` with `HuggingFaceEmbeddings` (model: `sentence-transformers/all-MiniLM-L6-v2`).
+    - Ensure it loads documents from `docs/`, splits them, and stores them in ChromaDB.
+    - Set the `persist_directory` to `db/chroma_db`.
+
+### 2. Retrieval Component
+- **[NEW] [retriever.py](file:///f:/DigiQC/backend/app/ai/retriever.py)**:
+    - Create a module that loads the existing ChromaDB vector store.
+    - Provide a `get_retriever()` function that returns the vector store as a retriever.
+
+### 3. LLM Component
+- **[MODIFY] [llm.py](file:///f:/DigiQC/backend/app/ai/llm.py)**:
+    - Refine the existing `google-genai` integration.
+    - Use `gemini-1.5-flash` or `gemini-1.5-pro` (or `gemini-2.0-flash` if available).
+    - Provide a function `generate_answer(query, context)` that combines the user query and retrieved context into a prompt.
+
+### 4. Orchestration
+- **[NEW] [rag_main.py](file:///f:/DigiQC/backend/app/ai/rag_main.py)**:
+    - An example script demonstrating the end-to-end flow: `Question -> Retrieval -> Prompt -> Gemini -> Answer`.
+
+### 5. Cleanup
+- **[DELETE] [retriver.py](file:///f:/DigiQC/backend/app/ai/retriver.py)**: Remove the misspelled and empty file.
+
+## Verification Plan
+
+### Automated Tests
+1.  **Ingestion Verification**: Run `python app/ai/ingestion_pipeline.py` and verify `db/chroma_db` is created/updated.
+2.  **Retrieval Verification**: Run a test script to query the retriever and ensure it returns relevant chunks.
+3.  **End-to-End Test**: Run `python app/ai/rag_main.py` with a sample question (e.g., "What is Google LLC?") and verify the output includes information from the documents.
+
+### Manual Verification
+- Check the console output to ensure no OpenAI or other paid embedding calls are being made.
+- Verify that the Gemini API is correctly receiving the combined context.

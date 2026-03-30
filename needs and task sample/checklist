@@ -1,0 +1,57 @@
+# Goal Description
+
+The goal is to build a complete, professional quality inspection flow within the mobile application. This includes a multi-field start screen, a dynamic checklist with conditional logic for defects (Yes/No/NA), and a comprehensive summary report screen.
+
+## User Review Required
+
+> [!IMPORTANT]
+> The "Start Inspection" screen will now require 6 fields instead of 3. Ensure this aligns with the user's data requirements.
+
+> [!NOTE]
+> The checklist data will be extended to support `defectType` and `comment` fields only when "No" is selected.
+
+## Proposed Changes
+
+### [Backend] Python/FastAPI Restructure
+
+#### [MODIFY] [backend/app/models/inspection.py](file:///f:/DigiQC/backend/app/models/inspection.py)
+- Extend [InspectionBase](file:///f:/DigiQC/backend/app/models/inspection.py#4-9) to include: `projectName`, `structureType`, `checklistType`, `inspectorName`.
+- Add a model for `ChecklistResponse` to handle `label`, [status](file:///f:/DigiQC/backend/app/services/service_request_service.py#15-27), `defectType`, and `comment`.
+- Update [Inspection](file:///f:/DigiQC/backend/app/models/inspection.py#13-18) to include a list of these responses and a summary object.
+
+#### [MODIFY] [backend/app/services/mock_db.py](file:///f:/DigiQC/backend/app/services/mock_db.py)
+- Update existing mock data to match the new schema.
+- Add a set of default "Defect Types" for the dropdown.
+
+***
+
+### [Mobile] React Native UI Enchancements
+
+#### [MODIFY] [app/start-inspection.tsx](file:///f:/DigiQC/DigiQC-mobile/app/start-inspection.tsx)
+- Replace existing simple form with a comprehensive 6-field form.
+- Use `projectName`, `siteName`, `structureType`, `checklistType`, [date](file:///f:/DigiQC/backend/app/services/service_request_service.py#15-27), `inspectorName`.
+
+#### [MODIFY] [app/checklists.tsx](file:///f:/DigiQC/DigiQC-mobile/app/checklists.tsx)
+- Implement "Yes/No/NA" toggle logic for each item.
+- Add conditional rendering: If "No" is selected, show a `Defect Type` selector and `Comment` input.
+- Update [handleSubmit](file:///f:/DigiQC/DigiQC-mobile/app/service-request.tsx#22-32) to calculate summary statistics before sending to the backend.
+
+#### [NEW] `app/report-summary.tsx`
+- Create a dedicated summary screen to display the final report after submission.
+- Show statistics: Total Items, Passed, Failed, N/A.
+- List all defects and comments.
+
+## Verification Plan
+
+### Automated Tests
+- No automated tests are planned at this stage.
+
+### Manual Verification
+1. **Start Flow**: Navigate to "Start Inspection", fill all 6 fields, and click "Start".
+2. **Checklist Interaction**: 
+   - Select "Yes" and verify no defect input appears.
+   - Select "No" and verify "Defect Type" and "Comment" inputs appear.
+   - Select "N/A" and verify no defect input appears.
+3. **Submission**: Click "Submit" after filling the checklist and verify navigation to the Summary screen.
+4. **Summary Review**: Ensure the counts (Passed/Failed/NA) match the user's selections.
+5. **Backend Check**: Verify the POST request sent to the API contains the full detailed report.

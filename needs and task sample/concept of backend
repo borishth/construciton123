@@ -1,0 +1,40 @@
+# Goal Description
+
+The current logic (mock data and service-like functions) is mixed with the mobile application. The objective is to move this logic to a professional backend structure at the root of the project (`f:\DigiQC\backend`) using FastAPI. This folder will follow a standard organizational pattern with routes, controllers, services, and models.
+
+## Proposed Changes
+
+### [Component] Standalone Backend (Python/FastAPI)
+
+Move business logic and data management out of the mobile app and into a well-structured server.
+
+#### [NEW] `backend/app/main.py`
+- Main entry point for the FastAPI application.
+
+#### [NEW] `backend/app/models/`
+- Pydantic models (schemas) for inspections, reports, and service requests.
+
+#### [NEW] `backend/app/api/v1/endpoints/`
+- API routes (e.g., `inspections.py`, `service_requests.py`) following RESTful principles.
+
+#### [NEW] `backend/app/controllers/`
+- Controller layer to manage business calculations (e.g., determining final report status).
+
+#### [NEW] `backend/app/services/`
+- Service layer for data persistence (currently using a mock-in-memory DB).
+
+***
+
+### [Component] DigiQC-mobile (Refactoring)
+
+#### [MODIFY] `services/*.service.ts`
+- Update the existing React Native services to use `fetch()` or `axios` to communicate with the Python backend instead of using the local [mock-db.ts](file:///f:/DigiQC/DigiQC-mobile/services/mock-db.ts).
+
+## Verification Plan
+
+### Automated Tests
+- Run `uvicorn` to start the backend.
+- Use `curl` or Postman to verify endpoints return correct data.
+
+### Manual Verification
+- Ensure the mobile app still functions correctly but now fetches its data from the centralized backend server.
