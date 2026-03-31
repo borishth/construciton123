@@ -1,0 +1,70 @@
+# Goal
+Add a comprehensive inspection workflow to the DigiQC project, covering Projects, Inspections, Checklist Items, Photos, NCRs (Non‑Conformance Reports), and Daily Reports. The workflow will be reflected in the database schema, FastAPI backend, and React‑Native mobile UI.
+
+## Proposed Changes
+### Backend (FastAPI)
+- **Models (`backend/app/models`):**
+  - `project.py` (if not existing) – `Project` model with basic fields.
+  - `inspection.py` – extend existing model to include `project_id`, `site_name`, `inspection_type`, `date`, `inspector_name`, `status`.
+  - `checklist_item.py` – new model with `inspection_id`, `label`, `status`, `defect_type`, `comment`.
+  - `photo.py` – model storing `file_path`, `related_type` (`inspection`, `checklist_item`, `ncr`), and foreign key to the related record.
+  - `ncr.py` – model with `checklist_item_id`, `description`, `severity`, `assigned_to`, `due_date`.
+  - `daily_report.py` – model with `project_id`, `date`, `summary`, optional foreign keys to related inspections/NCRs.
+- **Database migrations:** Use Alembic (already in repo) to create tables for the new models.
+- **Schemas (`backend/app/schemas`):** Pydantic schemas for request/response payloads for each new model.
+- **CRUD services (`backend/app/services`):** Service classes/functions for create, read, update, delete of the new entities.
+- **Controllers / routers (`backend/app/api`):** Add routers:
+  - `/projects`
+  - `/inspections`
+  - `/checklist-items`
+  - `/photos`
+  - `/ncrs`
+  - `/daily-reports`
+- **Update existing endpoints** to return the new relationships (e.g., Inspection includes checklist items and photos).
+
+### Frontend (React‑Native)
+- **Navigation:** Add new tabs/screens in `app/(main)/_layout.tsx` for:
+  - `InspectionCreate`
+  - `Checklist`
+  - `PhotoUploader`
+  - `NCRCreate`
+  - `DailyReport`
+- **Screens:** Create TSX files under `app/(main)/`:
+  - `inspection-create.tsx` – form for project, site, type, date.
+  - `checklist.tsx` – list of checklist items with Yes/No/NA toggles, defect type input, comment field.
+  - `photo-uploader.tsx` – use `expo-image-picker` to attach photos to checklist items or inspection.
+  - `ncr-create.tsx` – appears when a checklist item is marked ❌; collects description, severity, assignee, due date, optional photos.
+  - `daily-report.tsx` – free‑form text area plus reference selectors for related inspections/NCRs.
+- **State Management:** Use React Context or Redux (already in project) to keep the current inspection ID while navigating between screens.
+- **API Integration:** Add functions in `services/api.ts` to call the new backend endpoints (POST/GET/PUT/DELETE).
+- **Styling:** Reuse existing design system (`styles/main/*.ts`) for a premium look.
+
+## Verification Plan
+### Automated Tests
+- **Backend unit tests** (`backend/tests/`):
+  1. Test model creation and relationships using a temporary SQLite DB.
+  2. Test each router with `TestClient` – create a project, inspection, checklist items, photos, NCR, daily report and assert correct status codes and payloads.
+- **Frontend Jest/React‑Native tests** (if test suite exists):
+  1. Render each new screen and simulate user interactions (select project, toggle checklist, upload photo, create NCR).
+
+### Manual Testing
+1. Launch the mobile app (`npx expo start`).
+2. Navigate to **Inspection** tab → **Start Inspection**.
+3. Fill project/site/type/date and submit – verify a new inspection appears in the backend DB.
+4. Fill checklist items, mark some as ❌.
+5. For a failed item, press **Create NCR**, fill details, attach a photo, save – verify NCR appears linked to the checklist item.
+6. Add photos to checklist items and to the inspection itself.
+7. Open **Daily Report** screen, write a summary, reference the inspection/NCR IDs, submit – verify a `daily_report` record is stored.
+8. Use backend `/docs` (FastAPI Swagger) to inspect the created records.
+
+### Acceptance Criteria
+- All new tables exist and are linked correctly.
+- API endpoints return expected JSON structures and HTTP status codes.
+- Mobile UI allows the full workflow without crashes.
+- Data entered on the mobile app persists and can be retrieved via the API.
+
+## User Review Required
+- Confirm the naming of the new screens and tabs (e.g., `InspectionCreate` vs `StartInspection`).
+- Approve the proposed database table names and field choices.
+- Approve the order of navigation tabs.
+- Let us know if you prefer a different state‑management approach (Context vs Redux).

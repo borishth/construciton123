@@ -1,96 +1,75 @@
 import React from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useAppTheme } from '@/hooks/use-app-theme';
-import { styles } from '@/styles/main/performance.styles';
 
-export default function PerformanceTab() {
-  const t = useAppTheme();
-
+export default function Performance() {
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Text style={styles.title}>Performance Metrics</Text>
+        <Text style={styles.subtitle}>
+          Track your inspection performance and project statistics.
+        </Text>
 
-        <View style={styles.headerArea}>
-          <Text style={[styles.pageTitle, { color: t.textPrimary }]}>Performance</Text>
-          <Text style={[styles.pageSubtitle, { color: t.textSecondary }]}>Quality analytics & trend insights</Text>
+        <View style={styles.card}>
+          <MaterialIcons name="insights" size={40} color="#2563eb" />
+          <Text style={styles.cardTitle}>Coming Soon</Text>
+          <Text style={styles.cardText}>
+            Analytics dashboards for inspections, NCRs, and project progress
+            will be available here.
+          </Text>
         </View>
-
-        {/* Score */}
-        <View style={[styles.scoreCard, { backgroundColor: t.card, borderColor: t.cardBorder }]}>
-          <View style={[styles.scoreGlow, { backgroundColor: t.glow }]} />
-          <View style={[styles.scoreCircle, { backgroundColor: t.cardSubtle, borderColor: t.blue }]}>
-            <Text style={[styles.scoreValue, { color: t.textPrimary }]}>94</Text>
-          </View>
-          <Text style={[styles.scoreLabel, { color: t.green }]}>Global Quality Score</Text>
-          <View style={[styles.trendBadge, { backgroundColor: t.greenSoft }]}>
-            <MaterialIcons name="trending-up" size={14} color={t.green} />
-            <Text style={[styles.trendText, { color: t.green }]}>+12.5% vs Last Month</Text>
-          </View>
-        </View>
-
-        {/* Metrics */}
-        <View style={[styles.metricsCard, { backgroundColor: t.card, borderColor: t.cardBorder }]}>
-          <Text style={[styles.metricsTitle, { color: t.textPrimary }]}>Quality Metrics</Text>
-          <Text style={[styles.metricsSub, { color: t.textSecondary }]}>Quality score vs Structural integrity</Text>
-          <View style={styles.progressGroup}>
-            {[
-              { label: 'Safety Compliance', pct: 98, color: t.green },
-              { label: 'Material Precision', pct: 89, color: t.blue },
-              { label: 'Timeline Adherence', pct: 92, color: t.purple },
-              { label: 'Documentation', pct: 96, color: t.green },
-            ].map((m) => (
-              <View key={m.label} style={styles.progressItem}>
-                <View style={styles.progressLabelRow}>
-                  <Text style={[styles.progressLabel, { color: t.textSecondary }]}>{m.label}</Text>
-                  <Text style={[styles.progressPct, { color: m.color }]}>{m.pct}%</Text>
-                </View>
-                <View style={[styles.progressTrack, { backgroundColor: t.trackBg }]}>
-                  <View style={[styles.progressFill, { width: `${m.pct}%`, backgroundColor: m.color }]} />
-                </View>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* Summary */}
-        <Text style={[styles.sectionLabel, { color: t.textMuted }]}>INSPECTION SUMMARY</Text>
-        <View style={styles.summaryRow}>
-          {[
-            { icon: 'check-circle', value: '92', label: 'Passed', color: t.green },
-            { icon: 'cancel', value: '18', label: 'Failed', color: t.red },
-            { icon: 'schedule', value: '14', label: 'Pending', color: t.amber },
-          ].map((s) => (
-            <View key={s.label} style={[styles.summaryCard, { backgroundColor: t.card, borderColor: t.cardBorder }]}>
-              <View style={[styles.summaryIcon, { backgroundColor: `${s.color}18` }]}>
-                <MaterialIcons name={s.icon as any} size={20} color={s.color} />
-              </View>
-              <Text style={[styles.summaryValue, { color: t.textPrimary }]}>{s.value}</Text>
-              <Text style={[styles.summaryLabel, { color: t.textSecondary }]}>{s.label}</Text>
-            </View>
-          ))}
-        </View>
-
-        {/* Trend */}
-        <View style={[styles.trendCard, { backgroundColor: t.card, borderColor: t.cardBorder }]}>
-          <Text style={[styles.trendTitle, { color: t.textPrimary }]}>Monthly Trend</Text>
-          <View style={styles.trendBarGroup}>
-            {[
-              { m: 'Oct', v: 78 }, { m: 'Nov', v: 82 }, { m: 'Dec', v: 85 },
-              { m: 'Jan', v: 88 }, { m: 'Feb', v: 91 }, { m: 'Mar', v: 94 },
-            ].map((item) => (
-              <View key={item.m} style={styles.barCol}>
-                <Text style={[styles.barValue, { color: t.textSecondary }]}>{item.v}</Text>
-                <View style={[styles.barTrack, { backgroundColor: t.cardSubtle }]}>
-                  <View style={[styles.barFill, { height: `${item.v}%`, backgroundColor: item.m === 'Mar' ? t.blue : `${t.blue}50` }]} />
-                </View>
-                <Text style={[styles.barLabel, { color: t.textSecondary }, item.m === 'Mar' && { color: t.blue }]}>{item.m}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f7f8fa',
+  },
+  scrollContent: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginBottom: 8,
+    alignSelf: 'flex-start',
+  },
+  subtitle: {
+    fontSize: 15,
+    color: '#666',
+    marginBottom: 30,
+    alignSelf: 'flex-start',
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 30,
+    alignItems: 'center',
+    width: '100%',
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#222',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  cardText: {
+    fontSize: 15,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+});

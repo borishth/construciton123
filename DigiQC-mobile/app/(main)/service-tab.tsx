@@ -53,10 +53,16 @@ export default function ServiceTab() {
           ))}
         </View>
 
-        <TouchableOpacity style={[styles.newBtn, { backgroundColor: t.blue }]} onPress={() => router.push('/service-request' as any)} activeOpacity={0.8}>
-          <MaterialIcons name="add" size={20} color="#fff" />
-          <Text style={styles.newBtnText}>New Service Request</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: 10, marginHorizontal: 20, marginBottom: 20 }}>
+          <TouchableOpacity style={[styles.newBtn, { backgroundColor: t.blue, flex: 1, marginHorizontal: 0 }]} onPress={() => router.push('/service-request' as any)} activeOpacity={0.8}>
+            <MaterialIcons name="add" size={20} color="#fff" />
+            <Text style={styles.newBtnText}>New Service Request</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.newBtn, { backgroundColor: t.green, flex: 1, marginHorizontal: 0 }]} onPress={() => router.push('/daily-report' as any)} activeOpacity={0.8}>
+            <MaterialIcons name="event-note" size={20} color="#fff" />
+            <Text style={styles.newBtnText}>Daily Report</Text>
+          </TouchableOpacity>
+        </View>
 
         <Text style={[styles.sectionLabel, { color: t.textMuted }]}>ACTIVE REQUESTS</Text>
 

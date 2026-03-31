@@ -1,6 +1,6 @@
 from typing import List
 from app.services.supabase_service import supabase_client
-from app.models.inspection import Inspection, InspectionCreate, ChecklistItem
+from app.schemas.inspection import Inspection, InspectionCreate, ChecklistItem
 
 
 class InspectionController:
@@ -84,6 +84,9 @@ class InspectionController:
             ChecklistItem(id="1", label="Foundation check", icon="building"),
             ChecklistItem(id="2", label="Wall alignment", icon="ruler"),
             ChecklistItem(id="3", label="Roof integrity", icon="home"),
+            ChecklistItem(id="4", label="Plumbing leakage test", icon="water-drop"),
+            ChecklistItem(id="5", label="Electrical safety check", icon="bolt"),
+            ChecklistItem(id="6", label="Site clearance & safety", icon="cleaning-services"),
         ]
 
 

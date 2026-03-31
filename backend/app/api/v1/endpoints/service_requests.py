@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from typing import List
 # from app.controllers.service_controller import service_controller # Assuming this exists or will be refactored
-# from app.models.service_request import ServiceRequest
+# from app.schemas.service_request import ServiceRequest
 
 router = APIRouter()
 

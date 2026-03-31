@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from typing import List
 from app.controllers.inspection_controller import inspection_controller
-from app.models.inspection import Inspection, InspectionCreate, ChecklistItem
+from app.schemas.inspection import Inspection, InspectionCreate, ChecklistItem
 from app.services.supabase_service import supabase_client
 
 router = APIRouter()

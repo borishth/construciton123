@@ -25,7 +25,7 @@ export default function HomeTab() {
     try {
       setLoading(true);
 
-      const res = await fetch('http://10.150.8.179:8000/test-read');
+      const res = await fetch('http://192.168.1.7:8000/test-read');
       const json = await res.json();
 
       console.log('Backend data:', json);
