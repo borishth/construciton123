@@ -1,4 +1,5 @@
-const BASE_URL = "http://192.168.1.7:8000/api/v1";
+
+const BASE_URL = "http://10.150.10.187:8000/api/v1";
 
 export const serviceRequestService = {
   getServiceRequests: async () => {
