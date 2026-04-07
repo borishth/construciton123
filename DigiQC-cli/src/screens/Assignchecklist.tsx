@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -10,10 +10,15 @@ import { inspectionService } from '@/services/inspection.service';
 type Status = 'Yes' | 'No' | 'N/A' | 'none';
 type Props = NativeStackScreenProps<RootStackParamList, 'Checklists'>;
 
-export default function ChecklistScreen() {
+export default function Assignchecklist() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<Props['route']>();
-  const { projectName, siteName, structureType, checklistType, date, inspectorName } = route.params || {};
+  const { projectName, siteName, structureType, checklistType, date, inspectorName, workType, checklistTitle } = route.params || {};
+
+  const [template, setTemplate] = useState(checklistType || 'Standard Template');
+  const [projName, setProjName] = useState(projectName || '');
+  const [assignee, setAssignee] = useState(inspectorName || '');
+  const [dueDate, setDueDate] = useState(date || new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }));
 
   const [checklistItems, setChecklistItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,9 +56,14 @@ export default function ChecklistScreen() {
   };
 
   const handleSubmit = async () => {
+    if (!template.trim() || !projName.trim() || !assignee.trim() || !dueDate.trim()) {
+      Alert.alert('Incomplete Assignment', 'Please fill in all assignment fields (Template, Project Name, Assignee, and Due Date).');
+      return;
+    }
+
     const unrated = checklistItems.filter((i) => results[i.id] === 'none');
     if (unrated.length > 0) {
-      alert(`Please rate all items. Missing: ${unrated.map((i) => i.label).join(', ')}`);
+      Alert.alert(`Please rate all items. Missing: ${unrated.map((i) => i.label).join(', ')}`);
       return;
     }
 
@@ -112,7 +122,7 @@ export default function ChecklistScreen() {
           <MaterialIcons name="arrow-back" size={22} color="#191c1d" />
         </TouchableOpacity>
         <View>
-          <Text style={[styles.headerTitle, { color: '#191c1d' }]}>Inspection Checklist</Text>
+          <Text style={[styles.headerTitle, { color: '#191c1d' }]}>Assign Checklist</Text>
           <Text style={[styles.headerSub, { color: '#727785' }]}>{siteName} • {date}</Text>
         </View>
         <View style={{ width: 36 }} />
@@ -121,7 +131,33 @@ export default function ChecklistScreen() {
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={[styles.typeBadge, { backgroundColor: '#e8f0fe' }]}>
           <MaterialIcons name="fact-check" size={16} color="#005bbf" />
-          <Text style={[styles.typeText, { color: '#005bbf' }]}>{checklistType}</Text>
+          <Text style={[styles.typeText, { color: '#005bbf' }]}>{template}</Text>
+        </View>
+
+        <View style={{ marginBottom: 24, backgroundColor: '#f8f9fa', padding: 16, borderRadius: 16, borderWidth: 1, borderColor: '#e1e3e8' }}>
+          <Text style={{ fontSize: 11, fontWeight: '800', color: '#525f73', marginBottom: 6, letterSpacing: 1 }}>SELECT TEMPLATE</Text>
+          <View style={[styles.inputBox, { marginBottom: 16, backgroundColor: '#fff' }]}>
+            <MaterialIcons name="description" size={18} color="#727785" style={styles.inputIcon} />
+            <TextInput style={{ flex: 1, color: '#191c1d' }} placeholder="Select Template" value={template} onChangeText={setTemplate} />
+          </View>
+
+          <Text style={{ fontSize: 11, fontWeight: '800', color: '#525f73', marginBottom: 6, letterSpacing: 1 }}>PROJECT NAME</Text>
+          <View style={[styles.inputBox, { marginBottom: 16, backgroundColor: '#fff' }]}>
+            <MaterialIcons name="business" size={18} color="#727785" style={styles.inputIcon} />
+            <TextInput style={{ flex: 1, color: '#191c1d' }} placeholder="Project Name" value={projName} onChangeText={setProjName} />
+          </View>
+
+          <Text style={{ fontSize: 11, fontWeight: '800', color: '#525f73', marginBottom: 6, letterSpacing: 1 }}>PROJECT ASSIGN TO</Text>
+          <View style={[styles.inputBox, { marginBottom: 16, backgroundColor: '#fff' }]}>
+            <MaterialIcons name="person" size={18} color="#727785" style={styles.inputIcon} />
+            <TextInput style={{ flex: 1, color: '#191c1d' }} placeholder="Inspector / User Name" value={assignee} onChangeText={setAssignee} />
+          </View>
+
+          <Text style={{ fontSize: 11, fontWeight: '800', color: '#525f73', marginBottom: 6, letterSpacing: 1 }}>DUE DATE</Text>
+          <View style={[styles.inputBox, { marginBottom: 4, backgroundColor: '#fff' }]}>
+            <MaterialIcons name="event" size={18} color="#727785" style={styles.inputIcon} />
+            <TextInput style={{ flex: 1, color: '#191c1d' }} placeholder="Due Date" value={dueDate} onChangeText={setDueDate} />
+          </View>
         </View>
 
         {loading ? (
@@ -211,8 +247,4 @@ export default function ChecklistScreen() {
       </ScrollView>
     </View>
   );
-}
-
-function alert(arg0: string) {
-  throw new Error('Function not implemented.');
 }

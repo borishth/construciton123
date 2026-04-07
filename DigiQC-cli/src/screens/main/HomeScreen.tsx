@@ -26,7 +26,7 @@ export default function HomeScreen() {
   const loadReports = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://192.168.1.7:8000/test-read');
+      const res = await fetch('http://192.168.1.7:8001/test-read');
       const json = await res.json();
       setReports(json.data || []);
     } catch (err) {

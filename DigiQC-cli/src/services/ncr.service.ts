@@ -1,4 +1,5 @@
-const BASE_URL = "http://192.168.1.7:8000/api/v1";
+const BASE_URL = "http://10.150.9.107:8000/api/v1";
+//const BASE_URL = "http://192.168.1.7:8001/api/v1";
 
 export const ncrService = {
   getAllNCRs: async () => {

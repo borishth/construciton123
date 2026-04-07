@@ -10,7 +10,7 @@ import MainTabNavigator from './MainTabNavigator';
 // Screens
 import LoginScreen from '@/screens/auth/LoginScreen';
 import StartInspectionScreen from '@/screens/StartInspectionScreen';
-import ChecklistScreen from '@/screens/ChecklistScreen';
+import Assignchecklist from '@/screens/Assignchecklist';
 import ReportSummaryScreen from '@/screens/ReportSummaryScreen';
 import ReportsScreen from '@/screens/ReportsScreen';
 import InspectionsScreen from '@/screens/InspectionsScreen';
@@ -20,6 +20,7 @@ import ServiceScreen from '@/screens/ServiceScreen';
 import DailyReportScreen from '@/screens/DailyReportScreen';
 import NotificationsScreen from '@/screens/NotificationsScreen';
 import PhotoUploaderScreen from '@/screens/PhotoUploaderScreen';
+import EditTemplateScreen from '@/screens/EditTemplateScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -38,7 +39,8 @@ export function RootNavigator() {
       <Stack.Screen name="MainTabs" component={MainTabNavigator} />
       
       <Stack.Screen name="StartInspection" component={StartInspectionScreen} />
-      <Stack.Screen name="Checklists" component={ChecklistScreen} />
+      <Stack.Screen name="EditTemplate" component={EditTemplateScreen} />
+      <Stack.Screen name="Checklists" component={Assignchecklist} />
       <Stack.Screen name="ReportSummary" component={ReportSummaryScreen} />
       <Stack.Screen name="Reports" component={ReportsScreen} />
       <Stack.Screen name="Inspections" component={InspectionsScreen} />

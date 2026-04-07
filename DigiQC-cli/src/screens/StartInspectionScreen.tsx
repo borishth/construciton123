@@ -4,16 +4,23 @@ import {
   Alert,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { styles } from '@/styles/start-inspection.styles';
 import { inspectionService } from '@/services/inspection.service';
 
+interface ChecklistItem {
+  id: string;
+  question: string;
+  answer: 'Yes' | 'No' | 'N/A' | null;
+}
+
 export default function StartInspectionScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [projectName, setProjectName] = useState('');
-  const [siteName, setSiteName] = useState('');
+  const route = useRoute<RouteProp<RootStackParamList, 'StartInspection'>>();
+  const [workType, setWorkType] = useState('');
+  const [checklistTitle, setChecklistTitle] = useState('');
   const [structureType, setStructureType] = useState('');
   const [checklistType, setChecklistType] = useState('');
   const [inspectorName, setInspectorName] = useState('');
@@ -22,6 +29,27 @@ export default function StartInspectionScreen() {
   );
   const [showTypeList, setShowTypeList] = useState(false);
   const [inspectionTypes, setInspectionTypes] = useState<string[]>([]);
+
+  const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([
+    { id: '1', question: 'Material quality check?', answer: null },
+    { id: '2', question: 'Alignment and plumb check?', answer: null },
+    { id: '3', question: 'Mortar ratio check?', answer: null },
+    { id: '4', question: 'Curing status check?', answer: null },
+  ]);
+
+  // Receive items back from EditTemplateScreen
+  useEffect(() => {
+    const templateItems = route.params?.templateItems;
+    if (templateItems && templateItems.length > 0) {
+      setChecklistItems(
+        templateItems.map(i => ({
+          id: i.id,
+          question: i.question,
+          answer: (i.answer as 'Yes' | 'No' | 'N/A' | null) ?? null,
+        }))
+      );
+    }
+  }, [route.params?.templateItems]);
 
   useEffect(() => {
     const loadInspectionTypes = async () => {
@@ -55,15 +83,26 @@ export default function StartInspectionScreen() {
   }, []);
 
   const handleStart = () => {
-    if (!projectName.trim() || !siteName.trim() || !checklistType || !inspectorName.trim()) {
-      Alert.alert('Please fill in all required fields (Project, Site, Checklist Type, and Inspector).');
+    if (!workType.trim() || !checklistTitle.trim()) {
+      Alert.alert('Please fill in all required fields (Work Type and Checklist Title).');
       return;
     }
     navigation.navigate('Checklists', {
-      projectName, siteName, structureType, checklistType, date, inspectorName
+      workType, checklistTitle
     });
   };
 
+  const handleEditTemplate = () => {
+    navigation.navigate('EditTemplate', {
+      items: checklistItems.map(i => i.question),
+    });
+  };
+
+  const previewMax = 4;
+  const previewItems = checklistItems.slice(0, previewMax);
+  const remaining = checklistItems.length - previewMax;
+
+  const newLocal = <MaterialIcons name="add-circle" size={36} color="#005bbf" />;
   return (
     <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
       {/* Header */}
@@ -77,109 +116,111 @@ export default function StartInspectionScreen() {
 
       <View style={styles.body}>
         <View style={[styles.iconBadge, { backgroundColor: '#e8f0fe' }]}>
-          <MaterialIcons name="add-circle" size={36} color="#005bbf" />
+          {newLocal}
         </View>
-        <Text style={[styles.pageTitle, { color: '#191c1d' }]}>New Inspection</Text>
+        <Text style={[styles.pageTitle, { color: '#191c1d' }]}>New Checklist</Text>
         <Text style={[styles.pageSubtitle, { color: '#727785' }]}>Fill in the details below to begin your quality inspection checklist.</Text>
 
-        {/* Project Name */}
-        <Text style={[styles.label, { color: '#525f73' }]}>PROJECT NAME</Text>
+        {/* Work Type */}
+        <Text style={[styles.label, { color: '#525f73' }]}>WORK TYPE</Text>
         <View style={styles.inputBox}>
-          <MaterialIcons name="business" size={18} color="#727785" style={styles.inputIcon} />
+          <MaterialIcons name="handyman" size={18} color="#727785" style={styles.inputIcon} />
           <TextInput
             style={[styles.input, { color: '#191c1d' }]}
-            placeholder="e.g. Skyline Heights"
+            placeholder="e.g. Concrete Pouring"
             placeholderTextColor="#727785"
-            value={projectName}
-            onChangeText={setProjectName}
+            value={workType}
+            onChangeText={setWorkType}
           />
         </View>
 
-        {/* Site Name */}
-        <Text style={[styles.label, { color: '#525f73' }]}>SITE / LOCATION</Text>
+        {/* Checklist Title */}
+        <Text style={[styles.label, { color: '#525f73' }]}>CHECKLIST TITLE</Text>
         <View style={styles.inputBox}>
-          <MaterialIcons name="location-on" size={18} color="#727785" style={styles.inputIcon} />
+          <MaterialIcons name="assignment" size={18} color="#727785" style={styles.inputIcon} />
           <TextInput
             style={[styles.input, { color: '#191c1d' }]}
-            placeholder="e.g. Block A - Ground Floor"
+            placeholder="e.g. Pre-pour Checklist"
             placeholderTextColor="#727785"
-            value={siteName}
-            onChangeText={setSiteName}
+            value={checklistTitle}
+            onChangeText={setChecklistTitle}
           />
         </View>
 
-        {/* Structure Type & Checklist Type */}
-        <View style={{ flexDirection: 'row', gap: 12 }}>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.label, { color: '#525f73' }]}>STRUCTURE TYPE</Text>
-            <View style={styles.inputBox}>
-              <TextInput
-                style={[styles.input, { color: '#191c1d' }]}
-                placeholder="e.g. Commercial"
-                placeholderTextColor="#727785"
-                value={structureType}
-                onChangeText={setStructureType}
-              />
-            </View>
-          </View>
-
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.label, { color: '#525f73' }]}>CHECKLIST TYPE</Text>
-            <TouchableOpacity style={styles.inputBox} onPress={() => setShowTypeList(!showTypeList)} activeOpacity={0.8}>
-              <Text style={[styles.input, { color: checklistType ? '#191c1d' : '#727785', paddingTop: Platform.OS === 'ios' ? 2 : 0 }]} numberOfLines={1}>
-                {checklistType || 'Select type'}
-              </Text>
-              <MaterialIcons name={showTypeList ? 'expand-more' : 'expand-more'} size={18} color="#727785" />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {showTypeList && (
-          <View style={styles.dropdown}>
-            {inspectionTypes.map((type) => (
-              <TouchableOpacity
-                key={type}
-                style={[styles.dropdownItem, checklistType === type && styles.dropdownItemActive]}
-                onPress={() => { setChecklistType(type); setShowTypeList(false); }}
+        {/* Questions Preview (compact) */}
+        <View style={{ marginTop: 24, marginBottom: 12 }}>
+          <Text style={[styles.label, { color: '#525f73', marginBottom: 12 }]}>QUESTIONS PREVIEW (AUTO-LOADED)</Text>
+          <View style={{
+            backgroundColor: '#f8f9fa',
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: '#e1e3e8',
+            overflow: 'hidden',
+          }}>
+            {previewItems.map((item, index) => (
+              <View
+                key={item.id}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  paddingVertical: 13,
+                  paddingHorizontal: 16,
+                  borderBottomWidth: index < previewItems.length - 1 || remaining > 0 ? 1 : 0,
+                  borderBottomColor: '#e8eaed',
+                }}
               >
-                <Text style={[styles.dropdownText, checklistType === type && styles.dropdownTextActive]}>
-                  {type}
+                <Text style={{ fontSize: 13, fontWeight: '700', color: '#005bbf', width: 24 }}>
+                  {index + 1}.
                 </Text>
-                {checklistType === type && <MaterialIcons name="check" size={18} color="#005bbf" />}
-              </TouchableOpacity>
+                <Text style={{ flex: 1, fontSize: 14, color: '#191c1d' }} numberOfLines={1}>
+                  {item.question}
+                </Text>
+                <Text style={{ fontSize: 12, color: '#727785', marginLeft: 8 }}>
+                  {item.answer ? item.answer : 'Yes / No'}
+                </Text>
+              </View>
             ))}
+
+            {remaining > 0 && (
+              <View style={{ paddingVertical: 10, paddingHorizontal: 16, backgroundColor: '#f0f2f5' }}>
+                <Text style={{ fontSize: 12, color: '#727785', fontStyle: 'italic' }}>
+                  + {remaining} more question{remaining > 1 ? 's' : ''} included automatically
+                </Text>
+              </View>
+            )}
           </View>
-        )}
-
-        {/* Inspector Name */}
-        <Text style={[styles.label, { color: '#525f73' }]}>INSPECTOR NAME</Text>
-        <View style={styles.inputBox}>
-          <MaterialIcons name="person" size={18} color="#727785" style={styles.inputIcon} />
-          <TextInput
-            style={[styles.input, { color: '#191c1d' }]}
-            placeholder="e.g. Mark Johnson"
-            placeholderTextColor="#727785"
-            value={inspectorName}
-            onChangeText={setInspectorName}
-          />
         </View>
 
-        {/* Date */}
-        <Text style={[styles.label, { color: '#525f73' }]}>INSPECTION DATE</Text>
-        <View style={styles.inputBox}>
-          <MaterialIcons name="calendar-today" size={18} color="#727785" style={styles.inputIcon} />
-          <TextInput
-            style={[styles.input, { color: '#191c1d' }]}
-            value={date}
-            onChangeText={setDate}
-            placeholder="DD MMM YYYY"
-            placeholderTextColor="#727785"
-          />
-        </View>
+        {/* Create Template Button */}
+        <TouchableOpacity
+          onPress={handleEditTemplate}
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderRadius: 14,
+            height: 52,
+            marginTop: 8,
+            marginBottom: 12,
+            backgroundColor: '#1a2332',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.15,
+            shadowRadius: 8,
+            elevation: 4,
+            gap: 8,
+          }}
+          activeOpacity={0.85}
+        >
+          <MaterialIcons name="description" size={18} color="#fff" />
+          <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700' }}>
+            Create Template
+          </Text>
+        </TouchableOpacity>
 
         {/* Start Button */}
         <TouchableOpacity style={[styles.startBtn, { backgroundColor: '#005bbf', shadowColor: '#005bbf' }]} onPress={handleStart} activeOpacity={0.85}>
-          <Text style={styles.startBtnText}>Start Inspection</Text>
+          <Text style={styles.startBtnText}>Proceed to Assign</Text>
           <MaterialIcons name="arrow-forward" size={20} color="#fff" />
         </TouchableOpacity>
       </View>

@@ -28,7 +28,7 @@ export default function InspectionsTabScreen() {
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
         <View style={styles.headerArea}>
-          <Text style={[styles.pageTitle, { color: t.textPrimary }]}>Inspections</Text>
+          <Text style={[styles.pageTitle, { color: t.textPrimary }]}>Project</Text>
           <Text style={[styles.pageSubtitle, { color: t.textSecondary }]}>Manage and track your site quality audits</Text>
         </View>
 
@@ -41,9 +41,21 @@ export default function InspectionsTabScreen() {
             <View style={[styles.actionIcon, { backgroundColor: t.blueSoft }]}>
               <MaterialIcons name="add-circle-outline" size={24} color={t.blue} />
             </View>
-            <Text style={[styles.actionTitle, { color: t.textPrimary }]}>New Inspection</Text>
+            <Text style={[styles.actionTitle, { color: t.textPrimary }]}>Create Checklist</Text>
             <Text style={[styles.actionSub, { color: t.textSecondary }]}>Start a checklist</Text>
           </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[styles.actionCard, { backgroundColor: t.card, borderColor: t.cardBorder }]}
+            onPress={() => navigation.navigate('Checklists', {})} activeOpacity={0.7}
+          >
+            <View style={[styles.actionIcon, { backgroundColor: t.amberSoft }]}>
+              <MaterialIcons name="fact-check" size={24} color={t.amber} />
+            </View>
+            <Text style={[styles.actionTitle, { color: t.textPrimary }]}>Checklist Page</Text>
+            <Text style={[styles.actionSub, { color: t.textSecondary }]}>Inspection items</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity
             style={[styles.actionCard, { backgroundColor: t.card, borderColor: t.cardBorder }]}
             onPress={() => navigation.navigate('Reports')} activeOpacity={0.7}

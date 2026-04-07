@@ -13,7 +13,8 @@ export type MainTabParamList = {
 export type RootStackParamList = {
   Login: undefined;
   MainTabs: NavigatorScreenParams<MainTabParamList>;
-  StartInspection: undefined;
+  StartInspection: { templateItems?: Array<{ id: string; question: string; answer: string | null }> } | undefined;
+  EditTemplate: { items?: string[] } | undefined;
 
   Checklists: {
     projectName?: string;
@@ -22,6 +23,8 @@ export type RootStackParamList = {
     checklistType?: string;
     date?: string;
     inspectorName?: string;
+    workType?: string;
+    checklistTitle?: string;
   };
 
   ReportSummary: {
