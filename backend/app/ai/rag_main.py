@@ -1,7 +1,7 @@
 import sys
 import os
 from dotenv import load_dotenv
-from google import genai
+from langchain_ollama import ChatOllama
 
 # Add the project root (backend/) to sys.path
 sys.path.append(
@@ -19,19 +19,16 @@ from app.ai.retriever import retrieve_context
 # -----------------------------
 load_dotenv()
 
-api_key = os.getenv("GEMINI_API_KEY")
-print("API KEY:", api_key[:8] + "..." if api_key else "None")
-
 # -----------------------------
-# Gemini configuration
+# Ollama configuration
 # -----------------------------
-client = genai.Client(api_key=api_key)
-MODEL_NAME = "gemini-2.5-flash"
+client = ChatOllama(model="llama3.2")
+MODEL_NAME = "llama3.2"
 
 
 def generate_answer(query: str, context: str) -> str:
     """
-    Send retrieved context + user query to Gemini and return the final answer.
+    Send retrieved context + user query to Ollama llama3.2 and return the final answer.
     """
     prompt = f"""
 You are a strict AI assistant.
@@ -56,11 +53,8 @@ STRICT RULES:
 """
 
     try:
-        response = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=prompt,
-        )
-        return response.text.strip() if response.text else "No response text returned."
+        response = client.invoke(prompt)
+        return response.content.strip() if response.content else "No response returned."
     except Exception as e:
         return f"Error generating answer: {str(e)}"
 
@@ -87,7 +81,7 @@ def run_rag_query(query: str) -> str:
 
     answer = generate_answer(query, context)
 
-    print("\n--- GEMINI ANSWER ---")
+    print("\n--- OLLAMA ANSWER ---")
     print(answer)
 
     return answer

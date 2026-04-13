@@ -175,9 +175,6 @@ export default function StartInspectionScreen() {
                 <Text style={{ flex: 1, fontSize: 14, color: '#191c1d' }} numberOfLines={1}>
                   {item.question}
                 </Text>
-                <Text style={{ fontSize: 12, color: '#727785', marginLeft: 8 }}>
-                  {item.answer ? item.answer : 'Yes / No'}
-                </Text>
               </View>
             ))}
 

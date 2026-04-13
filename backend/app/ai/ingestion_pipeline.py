@@ -2,8 +2,11 @@ import os
 from langchain_community.document_loaders import TextLoader, DirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_ollama import OllamaEmbeddings
 from dotenv import load_dotenv
+
+from langchain_ollama.llms import OllamaLLM
+from langchain_core.prompts import ChatPromptTemplate
 
 # Load environment variables
 load_dotenv()
@@ -11,12 +14,15 @@ load_dotenv()
 # Configuration
 DOCS_PATH = "docs"
 PERSIST_DIRECTORY = "db/chroma_db"
-EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+EMBEDDING_MODEL_NAME = "mxbai-embed-large"
 
 def get_embedding_model():
-    """Initialize and return the local HuggingFace embedding model"""
-    print(f"--- Initializing local embeddings ({EMBEDDING_MODEL_NAME}) ---")
-    return HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME)
+    print(f"--- Initializing Ollama embeddings ({EMBEDDING_MODEL_NAME}) ---")
+    embed_base_url = os.getenv("OLLAMA_EMBED_BASE_URL", )
+    return OllamaEmbeddings(
+        model=EMBEDDING_MODEL_NAME,
+        base_url=embed_base_url
+    )
 
 def load_documents(docs_path=DOCS_PATH):
     """Load all text files from the docs directory"""

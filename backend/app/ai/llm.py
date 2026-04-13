@@ -1,23 +1,25 @@
 import os
+from langchain_ollama import ChatOllama
 from dotenv import load_dotenv
-from google import genai
 
 # Load environment variables
 load_dotenv()
 
-# Get API key from environment
-api_key = os.getenv("GEMINI_API_KEY")
-MODEL_NAME = "gemini-2.0-flash"
+MODEL_NAME = "llama3.2"
+OLLAMA_LLM_BASE_URL = os.getenv("OLLAMA_LLM_BASE_URL")
 
-
-# Initialize Gemini Client
-genai.configure(api_key=api_key)
+# Initialize Ollama Client
+client = ChatOllama(
+    model=MODEL_NAME,
+    base_url=OLLAMA_LLM_BASE_URL,
+    temperature=0,
+)
 
 
 def generate_answer(query: str, context: str):
     """
     Combines the user query and retrieved context into a strict prompt
-    and generates a final answer using the Gemini API.
+    and generates a final answer using the local Ollama llama3.2 model.
     """
 
     prompt = f"""
@@ -43,16 +45,13 @@ USER QUESTION:
 FINAL ANSWER (based ONLY on context):
 """
 
-    print(f"--- Generating answer using {MODEL_NAME} ---")
+    print(f"--- Generating answer using {MODEL_NAME} (Ollama) ---")
 
     try:
-        response = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=prompt
-        )
-        return response.text.strip()
+        response = client.invoke(prompt)
+        return response.content.strip()
     except Exception as e:
-        return f"Error communicating with Gemini: {e}"
+        return f"Error communicating with Ollama: {e}"
 
 
 if __name__ == "__main__":

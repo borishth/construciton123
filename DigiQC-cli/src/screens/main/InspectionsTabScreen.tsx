@@ -44,7 +44,7 @@ export default function InspectionsTabScreen() {
             <Text style={[styles.actionTitle, { color: t.textPrimary }]}>Create Checklist</Text>
             <Text style={[styles.actionSub, { color: t.textSecondary }]}>Start a checklist</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity
             style={[styles.actionCard, { backgroundColor: t.card, borderColor: t.cardBorder }]}
             onPress={() => navigation.navigate('Checklists', {})} activeOpacity={0.7}
@@ -52,7 +52,7 @@ export default function InspectionsTabScreen() {
             <View style={[styles.actionIcon, { backgroundColor: t.amberSoft }]}>
               <MaterialIcons name="fact-check" size={24} color={t.amber} />
             </View>
-            <Text style={[styles.actionTitle, { color: t.textPrimary }]}>Checklist Page</Text>
+            <Text style={[styles.actionTitle, { color: t.textPrimary }]}>Checklist</Text>
             <Text style={[styles.actionSub, { color: t.textSecondary }]}>Inspection items</Text>
           </TouchableOpacity>
 

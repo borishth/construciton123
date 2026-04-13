@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "DigiQC Backend"
+    PROJECT_NAME: str = "ConstructHub Backend"
     API_V1_STR: str = "/api/v1"
 
     SUPABASE_URL: str

@@ -43,7 +43,7 @@ export default function LoginScreen() {
               />
             </View>
             <Text style={styles.title}>
-              Digi<Text style={{ color: '#f04313' }}>QC</Text>
+              Construct<Text style={{ color: '#f04313' }}>Hub</Text>
             </Text>
             <Text style={[styles.subtitle, { color: '#f04313' }]}>PRECISION INSPECTION MANAGEMENT</Text>
           </View>
@@ -84,7 +84,7 @@ export default function LoginScreen() {
           {/* Footer */}
           <View style={styles.footer}>
             <Text style={styles.footerText}>
-              © 2024 DigiQC Systems.{'\n'}Trusted by 10,000+ Site Architects globally.
+              © 2026 ConstructHub.{'\n'}Trusted by 10,000+ Site Architects globally.
             </Text>
             <View style={styles.footerLinks}>
               <TouchableOpacity><Text style={styles.footerLinkText}>PRIVACY POLICY</Text></TouchableOpacity>
@@ -96,3 +96,7 @@ export default function LoginScreen() {
     </KeyboardAvoidingView>
   );
 }
+function alert(arg0: string) {
+  throw new Error('Function not implemented.');
+}
+

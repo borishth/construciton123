@@ -23,7 +23,7 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 @app.get("/")
 def root():
     return {
-        "message": "Welcome to DigiQC Backend API",
+        "message": "Welcome to ConstructHub Backend API",
         "project_name": settings.PROJECT_NAME
     }
 

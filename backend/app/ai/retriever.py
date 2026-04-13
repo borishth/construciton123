@@ -1,6 +1,6 @@
 import os
 from langchain_chroma import Chroma
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_ollama import OllamaEmbeddings
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -8,7 +8,7 @@ load_dotenv()
 
 # Configuration (must match ingestion_pipeline.py)
 PERSIST_DIRECTORY = "db/chroma_db"
-EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+EMBEDDING_MODEL_NAME = "mxbai-embed-large"
 
 
 def get_vectorstore():
@@ -22,7 +22,8 @@ def get_vectorstore():
 
     print(f"\n--- Loading vector store from {PERSIST_DIRECTORY} ---")
 
-    embedding_model = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME)
+    ollama_base_url = os.getenv("OLLAMA_BASE_URL")
+    embedding_model = OllamaEmbeddings(model=EMBEDDING_MODEL_NAME, base_url=ollama_base_url)
 
     vectorstore = Chroma(
         persist_directory=PERSIST_DIRECTORY,
@@ -76,7 +77,7 @@ def debug_retrieval(query: str, k: int = 3):
 
 if __name__ == "__main__":
     try:
-        print("=== DigiQC Retrieval Test Mode ===")
+        print("=== ConstructHub Retrieval Test Mode ===")
 
         while True:
             query = input("\nEnter your query (type 'exit' to quit): ").strip()

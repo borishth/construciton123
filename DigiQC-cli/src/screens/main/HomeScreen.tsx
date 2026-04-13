@@ -156,7 +156,7 @@ export default function HomeScreen() {
         <View style={[styles.aboutCard, { backgroundColor: t.cardSubtle, borderColor: t.cardBorder }]}>
           <MaterialIcons name="info-outline" size={18} color={t.textMuted} />
           <Text style={[styles.aboutText, { color: t.textSecondary }]}>
-            DigiQC is a smart quality control platform designed to streamline inspection processes,
+            ConstructHub is a smart quality control platform designed to streamline inspection processes,
             manage reports, and maintain high standards of safety and quality through AI-powered tools.
           </Text>
         </View>
