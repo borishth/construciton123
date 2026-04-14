@@ -10,4 +10,15 @@ router = APIRouter()
 
 @router.get("/")
 def get_service_requests():
-    return {"message": "Service requests endpoint"}
+    return [
+        {
+            "id": "SR-101",
+            "title": "Fix pipeline issue",
+            "status": "Pending"
+        },
+        {
+            "id": "SR-102",
+            "title": "Inspect wall cracks",
+            "status": "Completed"
+        }
+    ]

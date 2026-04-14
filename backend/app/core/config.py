@@ -5,8 +5,9 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "ConstructHub Backend"
     API_V1_STR: str = "/api/v1"
 
-    SUPABASE_URL: str
-    SUPABASE_KEY: str
+    DATABASE_URL: str
+    OLLAMA_LLM_BASE_URL: str | None = None
+    OLLAMA_EMBED_BASE_URL: str | None = None
     GEMINI_API_KEY: str | None = None
 
     model_config = SettingsConfigDict(
