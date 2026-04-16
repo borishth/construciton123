@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from app.api.v1.api import api_router
@@ -27,6 +27,11 @@ def root():
         "message": "Welcome to ConstructHub Backend API",
         "project_name": settings.PROJECT_NAME
     }
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return Response(content=b"", media_type="image/x-icon")
 
 
 @app.get("/test-db")
