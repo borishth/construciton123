@@ -2,8 +2,8 @@ import axios from 'axios';
 import { API_BASE_URL } from '../config/api.config';
 
 export interface ChecklistItem {
-  id: number;
-  template_id: number;
+  id: string;
+  template_id: string;
   question_text: string;
   order_index?: number;
   answer_type?: string;
@@ -13,7 +13,7 @@ export const checklistItemService = {
   /**
    * Page 2: Creates a single checklist item
    */
-  async createItem(templateId: number, text: string, orderIndex?: number): Promise<ChecklistItem> {
+  async createItem(templateId: string, text: string, orderIndex?: number): Promise<ChecklistItem> {
     const response = await axios.post(`${API_BASE_URL}/checklist-items/`, {
       template_id: templateId,
       question_text: text,
@@ -26,7 +26,7 @@ export const checklistItemService = {
   /**
    * Fetches all items for a template
    */
-  async getItemsByTemplate(templateId: number): Promise<ChecklistItem[]> {
+  async getItemsByTemplate(templateId: string): Promise<ChecklistItem[]> {
     const response = await axios.get(`${API_BASE_URL}/checklist-items/templates/${templateId}/items`);
     return response.data.data;
   }

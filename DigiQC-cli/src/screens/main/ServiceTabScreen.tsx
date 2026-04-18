@@ -56,7 +56,7 @@ export default function ServiceTabScreen() {
         </View>
 
         <View style={{ flexDirection: 'row', gap: 10, marginHorizontal: 20, marginBottom: 20 }}>
-          <TouchableOpacity style={[styles.newBtn, { backgroundColor: t.blue, flex: 1, marginHorizontal: 0 }]} onPress={() => navigation.navigate('ServiceRequest', {})} activeOpacity={0.8}>
+          <TouchableOpacity style={[styles.newBtn, { backgroundColor: t.blue, flex: 1, marginHorizontal: 0 }]} onPress={() => navigation.navigate('ServiceRequest')} activeOpacity={0.8}>
             <MaterialIcons name="add" size={20} color="#fff" />
             <Text style={styles.newBtnText}>New Service Request</Text>
           </TouchableOpacity>

@@ -1,34 +1,43 @@
+export type MainTabParamList = {
+  Home: undefined;
+  Projects: undefined;
+  ServiceTab: undefined;
+  AIAssistant: undefined;
+  YoloScanner: undefined;
+  Metrics: undefined;
+};
+
 export type RootStackParamList = {
   Login: undefined;
   MainTabs: undefined;
 
   // Page 1
   StartInspection: {
-    template_id?: number;
+    template_id?: string;
     checklistTitle?: string;
     workType?: string;
   };
 
   // Page 2
   EditTemplate: {
-    template_id: number;
+    template_id: string;
     items?: string[];
   };
 
   // Page 3
   Checklists: {
-    template_id?: number;
+    template_id?: string;
     workType?: string;
     checklistTitle?: string;
   };
 
   // Page 4
   ChecklistExecution: {
-    inspection_id: number;
+    inspection_id: string;
     projectName?: string;
     inspectorName?: string;
     date?: string;
-    template_id?: number;
+    template_id?: string;
   };
 
   ReportSummary: {

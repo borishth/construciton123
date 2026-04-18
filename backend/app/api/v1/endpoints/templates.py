@@ -50,7 +50,7 @@ def create_template(payload: TemplateCreate):
         new_id = cur.fetchone()[0]
         conn.commit()
         
-        return {"success": True, "id": new_id, "id_type": "integer"}
+        return {"success": True, "id": new_id}
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=500, detail=str(e))

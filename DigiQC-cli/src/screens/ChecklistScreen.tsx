@@ -19,9 +19,9 @@ export default function ChecklistScreen() {
   const { inspection_id, projectName, inspectorName, date } = route.params;
 
   const [items, setItems] = useState<InspectionItem[]>([]);
-  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState<Record<number, boolean>>({});
+  const [saving, setSaving] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     loadItems();
@@ -39,7 +39,7 @@ export default function ChecklistScreen() {
   };
 
   // ─── Save Answer Action ────────────────────────────────────────────────
-  const handleAnswer = async (itemId: number, choice: string) => {
+  const handleAnswer = async (itemId: string, choice: string) => {
     setSaving(prev => ({ ...prev, [itemId]: true }));
     try {
       // POST single answer per spec

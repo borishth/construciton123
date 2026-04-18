@@ -53,7 +53,7 @@ def create_checklist_item(payload: ChecklistItemCreate):
         conn.close()
 
 @router.get("/templates/{template_id}/items", response_model=dict)
-def get_template_items(template_id: int):
+def get_template_items(template_id: str):
     conn = get_connection()
     cur = conn.cursor()
     try:

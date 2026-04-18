@@ -36,7 +36,7 @@ export default function InspectionsTabScreen() {
         <View style={styles.actionRow}>
           <TouchableOpacity
             style={[styles.actionCard, { backgroundColor: t.card, borderColor: t.cardBorder }]}
-            onPress={() => navigation.navigate('StartInspection')} activeOpacity={0.7}
+            onPress={() => navigation.navigate('StartInspection', {})} activeOpacity={0.7}
           >
             <View style={[styles.actionIcon, { backgroundColor: t.blueSoft }]}>
               <MaterialIcons name="add-circle-outline" size={24} color={t.blue} />

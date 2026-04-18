@@ -69,16 +69,10 @@ export default function Assignchecklist() {
       );
 
       if (result.success) {
-        Alert.alert('Success', 'Inspection assigned. Proceeding to execution.', [
+        Alert.alert('Success', 'Inspection assigned and saved successfully.', [
           {
             text: 'OK',
-            onPress: () => navigation.navigate('ChecklistExecution', {
-              inspection_id: result.inspection_id,
-              template_id: selectedTemplate.id,
-              projectName: projectName.trim(),
-              inspectorName: assignedTo.trim(),
-              date: dueDate.trim()
-            })
+            onPress: () => navigation.navigate('MainTabs')
           }
         ]);
       }
@@ -179,7 +173,7 @@ export default function Assignchecklist() {
             </View>
             <FlatList
               data={templates}
-              keyExtractor={item => item.id.toString()}
+              keyExtractor={item => item.id}
               renderItem={({ item }) => (
                 <TouchableOpacity 
                   style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: '#f1f3f4', backgroundColor: selectedTemplate?.id === item.id ? '#e8f0fe' : '#fff' }}

@@ -7,7 +7,7 @@ class TemplateCreate(BaseModel):
     checklist_title: str = Field(..., description="e.g. Column Inspection")
 
 class TemplateResponse(BaseModel):
-    id: int
+    id: str
     work_type: Optional[str] = None
     checklist_title: Optional[str] = None
     created_at: Optional[datetime] = None

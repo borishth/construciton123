@@ -12,7 +12,6 @@ import ServiceTabScreen from '@/screens/main/ServiceTabScreen';
 import AIAssistantScreen from '@/screens/main/AIAssistantScreen';
 import YoloScannerScreen from '@/screens/main/YoloScannerScreen';
 import PerformanceScreen from '@/screens/main/PerformanceScreen';
-
 import { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
