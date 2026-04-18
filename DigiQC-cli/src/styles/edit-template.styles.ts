@@ -52,6 +52,14 @@ export const styles = StyleSheet.create({
     borderRadius: 10,
   },
   sectionBadgeText: { fontSize: 11, fontWeight: '700', color: '#005bbf' },
+  label: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#525f73',
+    marginBottom: 8,
+    letterSpacing: 0.5,
+    marginTop: 4,
+  },
 
   card: {
     backgroundColor: '#fff',

@@ -7,6 +7,10 @@ import { styles } from '@/styles/main/yolo-scanner.styles';
 export default function YoloScannerScreen() {
   const t = useAppTheme();
 
+  function alert(arg0: string): void {
+    throw new Error('Function not implemented.');
+  }
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>

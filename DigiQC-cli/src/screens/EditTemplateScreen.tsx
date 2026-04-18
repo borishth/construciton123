@@ -1,189 +1,137 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, ScrollView, Alert,
+  View, Text, TextInput, TouchableOpacity, ScrollView,
+  Alert, ActivityIndicator,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
-import { styles } from '@/styles/edit-template.styles';
+import { styles } from '../styles/edit-template.styles';
+import { checklistItemService, ChecklistItem } from '../services/checklist-item.service';
 
-interface ChecklistItem {
-  id: string;
-  question: string;
-  answer: 'Yes' | 'No' | 'N/A' | null;
-}
-
-type EditTemplateRouteProp = RouteProp<RootStackParamList, 'EditTemplate'>;
+type NavProp = NativeStackNavigationProp<RootStackParamList>;
+type EditRouteProp = RouteProp<RootStackParamList, 'EditTemplate'>;
 
 export default function EditTemplateScreen() {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const route = useRoute<EditTemplateRouteProp>();
+  const navigation = useNavigation<NavProp>();
+  const route = useRoute<EditRouteProp>();
+  const { template_id } = route.params;
 
-  const incoming = route.params?.items;
-  const [items, setItems] = useState<ChecklistItem[]>(
-    incoming && incoming.length > 0
-      ? incoming.map((q: string, i: number) => ({ id: String(i + 1), question: q, answer: null }))
-      : [
-          { id: '1', question: 'Material quality check?', answer: null },
-          { id: '2', question: 'Alignment and plumb check?', answer: null },
-          { id: '3', question: 'Mortar ratio check?', answer: null },
-          { id: '4', question: 'Curing status check?', answer: null },
-        ]
-  );
+  const [questionText, setQuestionText] = useState('');
+  const [savedItems, setSavedItems] = useState<ChecklistItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
 
-  const answered = items.filter(i => i.answer !== null).length;
-  const unanswered = items.length - answered;
+  // ─── Load Existing Items ────────────────────────────────────────────────
+  useEffect(() => {
+    loadItems();
+  }, [template_id]);
 
-  const handleAdd = () => {
-    setItems([...items, { id: Date.now().toString(), question: '', answer: null }]);
+  const loadItems = async () => {
+    try {
+      const items = await checklistItemService.getItemsByTemplate(template_id);
+      setSavedItems(items);
+    } catch (err) {
+      console.error('Failed to load items', err);
+    } finally {
+      setFetching(false);
+    }
   };
 
-  const handleUpdate = (id: string, text: string) => {
-    setItems(items.map(i => (i.id === id ? { ...i, question: text } : i)));
-  };
-
-  const handleAnswer = (id: string, answer: 'Yes' | 'No' | 'N/A') => {
-    setItems(items.map(i => (i.id === id ? { ...i, answer: i.answer === answer ? null : answer } : i)));
-  };
-
-  const handleRemove = (id: string) => {
-    if (items.length <= 1) {
-      Alert.alert('Cannot Remove', 'At least one question is required.');
+  // ─── Add Question Action ───────────────────────────────────────────────
+  const handleAddQuestion = async () => {
+    if (!questionText.trim()) {
+      Alert.alert('Empty Question', 'Please enter question text before adding.');
       return;
     }
-    Alert.alert('Remove Question', 'Are you sure you want to delete this question?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => setItems(items.filter(i => i.id !== id)) },
-    ]);
-  };
 
-  const handleSave = () => {
-    const emptyQuestions = items.filter(i => !i.question.trim());
-    if (emptyQuestions.length > 0) {
-      Alert.alert('Incomplete', `${emptyQuestions.length} question(s) have empty text. Please fill them in.`);
-      return;
-    }
-    // Pass the items back via navigation params
-    navigation.navigate('StartInspection', {
-      templateItems: items.map(i => ({ id: i.id, question: i.question, answer: i.answer })),
-    } as any);
-  };
+    setLoading(true);
+    try {
+      // Create item in DB immediately per spec
+      const newItem = await checklistItemService.createItem(
+        template_id,
+        questionText.trim(),
+        savedItems.length + 1 // Default order_index
+      );
 
-  const getAnswerIcon = (opt: string) => {
-    switch (opt) {
-      case 'Yes': return 'check-circle';
-      case 'No': return 'cancel';
-      case 'N/A': return 'remove-circle';
-      default: return 'radio-button-unchecked';
+      // Refresh list locally
+      setSavedItems([...savedItems, newItem]);
+      setQuestionText('');
+      Alert.alert('Success', 'Question added to template.');
+    } catch (err: any) {
+      Alert.alert('Error', err.response?.data?.detail || 'Failed to save question.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <MaterialIcons name="arrow-back" size={22} color="#191c1d" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Edit Template</Text>
-        <View style={styles.headerRight} />
+        <Text style={styles.headerTitle}>Add Checklist Items</Text>
+        <View style={{ width: 36 }} />
       </View>
 
-      {/* Stats Bar */}
-      <View style={styles.statsBar}>
-        <View style={styles.statItem}>
-          <Text style={styles.statNumber}>{items.length}</Text>
-          <Text style={styles.statLabel}>TOTAL</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={[styles.statNumber, { color: '#006d3a' }]}>{answered}</Text>
-          <Text style={styles.statLabel}>ANSWERED</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={[styles.statNumber, { color: '#ba1a1a' }]}>{unanswered}</Text>
-          <Text style={styles.statLabel}>PENDING</Text>
-        </View>
-      </View>
-
-      {/* Questions List */}
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>INSPECTION QUESTIONS</Text>
-          <View style={styles.sectionBadge}>
-            <Text style={styles.sectionBadgeText}>{items.length} items</Text>
-          </View>
+
+        {/* Input for new question */}
+        <View style={styles.card}>
+          <Text style={styles.label}>NEW QUESTION TEXT</Text>
+          <TextInput
+            style={[styles.questionInput, { height: 80, textAlignVertical: 'top' }]}
+            placeholder="e.g. Is the slab reinforcement correctly placed?"
+            value={questionText}
+            onChangeText={setQuestionText}
+            multiline
+          />
+          <TouchableOpacity
+            style={[styles.addBtn, { marginTop: 12, opacity: loading ? 0.7 : 1 }]}
+            onPress={handleAddQuestion}
+            disabled={loading}
+          >
+            {loading ? <ActivityIndicator color="#005bbf" /> : <MaterialIcons name="add" size={20} color="#005bbf" />}
+            <Text style={styles.addBtnText}>{loading ? 'Saving...' : 'Add Question'}</Text>
+          </TouchableOpacity>
         </View>
 
-        {items.length === 0 ? (
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>QUESTIONS IN TEMPLATE ({savedItems.length})</Text>
+        </View>
+
+        {fetching ? (
+          <ActivityIndicator size="large" color="#005bbf" style={{ marginTop: 40 }} />
+        ) : savedItems.length === 0 ? (
           <View style={styles.emptyState}>
-            <View style={styles.emptyIcon}>
-              <MaterialIcons name="playlist-add" size={32} color="#005bbf" />
-            </View>
-            <Text style={styles.emptyTitle}>No Questions Yet</Text>
-            <Text style={styles.emptySubtitle}>
-              Tap "Add Question" below to start{'\n'}building your inspection template.
-            </Text>
+            <Text style={{ color: '#727785' }}>No questions added yet.</Text>
           </View>
         ) : (
-          items.map((item, index) => (
+          savedItems.map((item, index) => (
             <View key={item.id} style={styles.card}>
-              <View style={styles.cardContent}>
+              <View style={{ flexDirection: 'row', gap: 12 }}>
                 <View style={styles.cardIndex}>
                   <Text style={styles.cardIndexText}>{index + 1}</Text>
                 </View>
-                <View style={styles.cardBody}>
-                  <TextInput
-                    style={styles.questionInput}
-                    value={item.question}
-                    onChangeText={text => handleUpdate(item.id, text)}
-                    placeholder="Type your question here..."
-                    placeholderTextColor="#a0a4b0"
-                    multiline
-                  />
-                </View>
-                <TouchableOpacity onPress={() => handleRemove(item.id)} style={styles.deleteBtn}>
-                  <MaterialIcons name="delete-outline" size={20} color="#ba1a1a" />
-                </TouchableOpacity>
-              </View>
-
-              {/* Answer Options */}
-              <View style={styles.answerRow}>
-                {(['Yes', 'No', 'N/A'] as const).map(opt => (
-                  <TouchableOpacity
-                    key={opt}
-                    onPress={() => handleAnswer(item.id, opt)}
-                    style={[styles.answerChip, item.answer === opt && styles.answerChipActive]}
-                    activeOpacity={0.7}
-                  >
-                    <MaterialIcons
-                      name={getAnswerIcon(opt)}
-                      size={15}
-                      color={item.answer === opt ? '#005bbf' : '#a0a4b0'}
-                    />
-                    <Text style={[styles.answerChipText, item.answer === opt && styles.answerChipTextActive]}>
-                      {opt}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                <Text style={{ flex: 1, fontSize: 15, color: '#191c1d' }}>{item.question_text}</Text>
               </View>
             </View>
           ))
         )}
       </ScrollView>
 
-      {/* Fixed Footer */}
+      {/* Footer Button */}
       <View style={styles.footer}>
-        <View style={styles.footerRow}>
-          <TouchableOpacity style={styles.addBtn} onPress={handleAdd} activeOpacity={0.75}>
-            <MaterialIcons name="add" size={20} color="#005bbf" />
-            <Text style={styles.addBtnText}>Add Question</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.saveBtn} onPress={handleSave} activeOpacity={0.85}>
-            <MaterialIcons name="save" size={18} color="#fff" />
-            <Text style={styles.saveBtnText}>Save Template</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={[styles.saveBtn, { backgroundColor: savedItems.length > 0 ? '#005bbf' : '#b0bec5' }]}
+          onPress={() => navigation.navigate('Checklists', { template_id })}
+          disabled={savedItems.length === 0}
+        >
+          <Text style={styles.saveBtnText}>Save and Continue</Text>
+          <MaterialIcons name="arrow-forward" size={18} color="#fff" />
+        </TouchableOpacity>
       </View>
     </View>
   );

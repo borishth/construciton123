@@ -1,77 +1,52 @@
-import { NavigatorScreenParams } from '@react-navigation/native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-
-export type MainTabParamList = {
-  Home: undefined;
-  Projects: undefined;
-  ServiceTab: undefined;
-  AIAssistant: undefined;
-  YoloScanner: undefined;
-  Metrics: undefined;
-};
-
 export type RootStackParamList = {
   Login: undefined;
-  MainTabs: NavigatorScreenParams<MainTabParamList>;
-  StartInspection: { templateItems?: Array<{ id: string; question: string; answer: string | null }> } | undefined;
-  EditTemplate: { items?: string[] } | undefined;
+  MainTabs: undefined;
 
+  // Page 1
+  StartInspection: {
+    template_id?: number;
+    checklistTitle?: string;
+    workType?: string;
+  };
+
+  // Page 2
+  EditTemplate: {
+    template_id: number;
+    items?: string[];
+  };
+
+  // Page 3
   Checklists: {
-    projectName?: string;
-    siteName?: string;
-    structureType?: string;
-    checklistType?: string;
-    date?: string;
-    inspectorName?: string;
+    template_id?: number;
     workType?: string;
     checklistTitle?: string;
   };
 
-  ReportSummary: {
-    reportId?: string;
+  // Page 4
+  ChecklistExecution: {
+    inspection_id: number;
     projectName?: string;
-    siteName?: string;
     inspectorName?: string;
     date?: string;
-    summary?: string;
-    responses?: string;
+    template_id?: number;
+  };
+
+  ReportSummary: {
+    reportId: string;
+    projectName: string;
+    inspectorName: string;
+    date: string;
+    summary: string;
+    responses: string;
+    siteName?: string;
   };
 
   Reports: undefined;
   Inspections: undefined;
-
-  NCRCreate: {
-    inspectionId?: string | null;
-    checklistItemId?: string | null;
-    checklistItemLabel?: string;
-  };
-
-  ServiceRequest: {
-    failedItems?: string;
-    siteName?: string;
-    inspectionType?: string;
-    date?: string;
-    reportId?: string;
-  };
-
-  Service: {
-    description?: string;
-    priority?: string;
-    assignee?: string;
-    repairDate?: string;
-  };
-
+  NCRCreate: undefined;
+  ServiceRequest: undefined;
+  Service: undefined;
   DailyReport: undefined;
   Notifications: undefined;
   PhotoUploader: undefined;
 };
-
-export type RootStackScreenProps<T extends keyof RootStackParamList> =
-  NativeStackScreenProps<RootStackParamList, T>;
-
-// Global typing for navigation
-declare global {
-  namespace ReactNavigation {
-    interface RootParamList extends RootStackParamList { }
-  }
-}

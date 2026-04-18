@@ -1,60 +1,42 @@
-const BASE_URL = "http://10.150.9.107:8000/api/v1";
-//const BASE_URL = "http://10.150.10.187:8001/api/v1";
-//const BASE_URL = "http://192.168.1.7:8001/api/v1";
+import axios from 'axios';
+import { API_BASE_URL } from '../config/api.config';
 
+export interface InspectionItem {
+  id: number;
+  question_text: string;
+}
 
 export const inspectionService = {
-  getInspectionTypes: async () => {
-    const res = await fetch(`${BASE_URL}/inspections/checklist-items`);
-    const json = await res.json();
-    return json.data || [];
-  },
-  getChecklistItems: async () => {
-    const res = await fetch(`${BASE_URL}/inspections/checklist-items`);
-    const json = await res.json();
-    return json.data || [];
-  },
-
-  getAllInspections: async () => {
-    const res = await fetch(`${BASE_URL}/inspections`);
-    const json = await res.json();
-    return json.data || [];
-  },
-
-  getReports: async () => {
-    const res = await fetch(`${BASE_URL}/inspections/`);
-    const text = await res.text();
-
-    let json;
-    try {
-      json = JSON.parse(text);
-    } catch {
-      throw new Error('Backend did not return JSON: ' + text);
-    }
-
-    return json.data || json || [];
-  },
-
-  getDefectTypes: async () => {
-    const res = await fetch(`${BASE_URL}/inspections/defect-types`);
-    const json = await res.json();
-    return json.data || [];
-  },
-
-  submitInspection: async (report: any) => {
-    const res = await fetch(`${BASE_URL}/inspections/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(report),
+  /**
+   * Page 3: Creates an inspection record (assignment)
+   */
+  async createInspection(templateId: number, projectName: string, assignedTo?: string, dueDate?: string): Promise<{ success: boolean; inspection_id: number }> {
+    const response = await axios.post(`${API_BASE_URL}/inspections/`, {
+      template_id: templateId,
+      project_name: projectName,
+      assigned_to: assignedTo,
+      due_date: dueDate
     });
+    return response.data;
+  },
 
-    const json = await res.json();
-    console.log('submitInspection response:', json);
+  /**
+   * Page 4 (Step 1): Load execution questions
+   */
+  async getExecutionItems(inspectionId: number): Promise<InspectionItem[]> {
+    const response = await axios.get(`${API_BASE_URL}/inspections/${inspectionId}/items`);
+    return response.data.data;
+  },
 
-    if (!res.ok) {
-      throw new Error(JSON.stringify(json));
-    }
-
-    return json;
+  /**
+   * Page 4 (Step 2): Save single answer
+   */
+  async saveAnswer(inspectionId: number, itemId: number, answer: string): Promise<any> {
+    const response = await axios.post(`${API_BASE_URL}/inspection-answers/`, {
+      inspection_id: inspectionId,
+      checklist_item_id: itemId,
+      answer: answer.toLowerCase()
+    });
+    return response.data;
   }
 };

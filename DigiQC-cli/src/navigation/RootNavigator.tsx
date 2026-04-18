@@ -11,6 +11,7 @@ import MainTabNavigator from './MainTabNavigator';
 import LoginScreen from '@/screens/auth/LoginScreen';
 import StartInspectionScreen from '@/screens/StartInspectionScreen';
 import Assignchecklist from '@/screens/Assignchecklist';
+import ChecklistScreen from '@/screens/ChecklistScreen';
 import ReportSummaryScreen from '@/screens/ReportSummaryScreen';
 import ReportsScreen from '@/screens/ReportsScreen';
 import InspectionsScreen from '@/screens/InspectionsScreen';
@@ -37,10 +38,11 @@ export function RootNavigator() {
     >
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="MainTabs" component={MainTabNavigator} />
-      
+
       <Stack.Screen name="StartInspection" component={StartInspectionScreen} />
       <Stack.Screen name="EditTemplate" component={EditTemplateScreen} />
       <Stack.Screen name="Checklists" component={Assignchecklist} />
+      <Stack.Screen name="ChecklistExecution" component={ChecklistScreen} />
       <Stack.Screen name="ReportSummary" component={ReportSummaryScreen} />
       <Stack.Screen name="Reports" component={ReportsScreen} />
       <Stack.Screen name="Inspections" component={InspectionsScreen} />

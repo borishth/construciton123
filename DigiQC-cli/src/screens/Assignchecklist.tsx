@@ -1,250 +1,198 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import {
+  View, Text, TextInput, TouchableOpacity, ScrollView,
+  ActivityIndicator, Alert, Modal, FlatList,
+} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
-import { styles } from '@/styles/checklists.styles';
-import { inspectionService } from '@/services/inspection.service';
+import { styles } from '../styles/checklists.styles';
+import { templateService, Template } from '../services/template.service';
+import { inspectionService } from '../services/inspection.service';
 
-type Status = 'Yes' | 'No' | 'N/A' | 'none';
 type Props = NativeStackScreenProps<RootStackParamList, 'Checklists'>;
+type NavProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function Assignchecklist() {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<NavProp>();
   const route = useRoute<Props['route']>();
-  const { projectName, siteName, structureType, checklistType, date, inspectorName, workType, checklistTitle } = route.params || {};
 
-  const [template, setTemplate] = useState(checklistType || 'Standard Template');
-  const [projName, setProjName] = useState(projectName || '');
-  const [assignee, setAssignee] = useState(inspectorName || '');
-  const [dueDate, setDueDate] = useState(date || new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }));
-
-  const [checklistItems, setChecklistItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [results, setResults] = useState<Record<string, Status>>({});
-  const [comments, setComments] = useState<Record<string, string>>({});
-  const [defectTypes, setDefectTypes] = useState<string[]>([
-    'Crack',
-    'Leakage',
-    'Alignment Issue',
-    'Surface Damage',
-    'Honeycombing'
-  ]);
-  const [defectSelections, setDefectSelections] = useState<Record<string, string>>({});
-  const [showDefectPicker, setShowDefectPicker] = useState<string | null>(null);
+  // ─── State ─────────────────────────────────────────────────────────────────
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+  const [projectName, setProjectName] = useState('');
+  const [assignedTo, setAssignedTo] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  
+  const [loadingTemplates, setLoadingTemplates] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
 
   useEffect(() => {
-    loadChecklist();
+    loadTemplates();
   }, []);
 
-  const loadChecklist = async () => {
+  const loadTemplates = async () => {
     try {
-      const items = await inspectionService.getChecklistItems();
-      setChecklistItems(items);
-      setResults(Object.fromEntries(items.map((i: any) => [i.id, 'none'])));
-      setComments(Object.fromEntries(items.map((i: any) => [i.id, ''])));
-    } catch (error) {
-      console.error('Failed to load checklist:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const setStatus = (id: string, status: Status) => {
-    setResults((prev) => ({ ...prev, [id]: status }));
-  };
-
-  const handleSubmit = async () => {
-    if (!template.trim() || !projName.trim() || !assignee.trim() || !dueDate.trim()) {
-      Alert.alert('Incomplete Assignment', 'Please fill in all assignment fields (Template, Project Name, Assignee, and Due Date).');
-      return;
-    }
-
-    const unrated = checklistItems.filter((i) => results[i.id] === 'none');
-    if (unrated.length > 0) {
-      Alert.alert(`Please rate all items. Missing: ${unrated.map((i) => i.label).join(', ')}`);
-      return;
-    }
-
-    const passedCount = checklistItems.filter(i => results[i.id] === 'Yes').length;
-    const failedCount = checklistItems.filter(i => results[i.id] === 'No').length;
-    const naCount = checklistItems.filter(i => results[i.id] === 'N/A').length;
-
-    const responses = checklistItems.map(item => ({
-      id: item.id,
-      label: item.label,
-      status: results[item.id],
-      defectType: results[item.id] === 'No' ? defectSelections[item.id] : undefined,
-      comment: results[item.id] === 'No' ? comments[item.id] : undefined,
-    }));
-
-    const reportId = `#QC-${Math.floor(Math.random() * 9000) + 1000}`;
-    const overallStatus = failedCount > 0 ? 'FAIL' : 'PASS';
-
-    await inspectionService.submitInspection({
-      projectName: projectName as string,
-      siteName: siteName as string,
-      structureType: structureType as string,
-      checklistType: checklistType as string,
-      date: date as string,
-      inspectorName: inspectorName as string,
-      status: overallStatus,
-      responses,
-      summary: {
-        totalItems: checklistItems.length,
-        passedCount,
-        failedCount,
-        naCount,
+      const data = await templateService.getTemplates();
+      setTemplates(data);
+      if (route.params?.template_id) {
+        const match = data.find(t => t.id === route.params.template_id);
+        if (match) setSelectedTemplate(match);
       }
-    });
+    } catch (err) {
+      Alert.alert('Load Error', 'Could not fetch templates from AWS database.');
+    } finally {
+      setLoadingTemplates(false);
+    }
+  };
 
-    navigation.navigate('ReportSummary', {
-      reportId,
-      projectName: projectName as string,
-      siteName: siteName as string,
-      inspectorName: inspectorName as string,
-      date: date as string,
-      summary: JSON.stringify({
-        totalItems: checklistItems.length,
-        passedCount,
-        failedCount,
-        naCount,
-      }),
-      responses: JSON.stringify(responses),
-    });
+  // ─── Submit Inspection Action ────────────────────────────────────────────
+  const handleSubmit = async () => {
+    if (!selectedTemplate) {
+      Alert.alert('Selection Required', 'Please select a template from the list.');
+      return;
+    }
+    if (!projectName.trim()) {
+      Alert.alert('Missing Field', 'Please enter a project name.');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const result = await inspectionService.createInspection(
+        selectedTemplate.id,
+        projectName.trim(),
+        assignedTo.trim() || undefined,
+        dueDate.trim() || undefined
+      );
+
+      if (result.success) {
+        Alert.alert('Success', 'Inspection assigned. Proceeding to execution.', [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('ChecklistExecution', {
+              inspection_id: result.inspection_id,
+              template_id: selectedTemplate.id,
+              projectName: projectName.trim(),
+              inspectorName: assignedTo.trim(),
+              date: dueDate.trim()
+            })
+          }
+        ]);
+      }
+    } catch (err: any) {
+      Alert.alert('Error', err.response?.data?.detail || 'Failed to create inspection record.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <MaterialIcons name="arrow-back" size={22} color="#191c1d" />
         </TouchableOpacity>
-        <View>
-          <Text style={[styles.headerTitle, { color: '#191c1d' }]}>Assign Checklist</Text>
-          <Text style={[styles.headerSub, { color: '#727785' }]}>{siteName} • {date}</Text>
-        </View>
+        <Text style={styles.headerTitle}>Assign Checklist</Text>
         <View style={{ width: 36 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
-        <View style={[styles.typeBadge, { backgroundColor: '#e8f0fe' }]}>
-          <MaterialIcons name="fact-check" size={16} color="#005bbf" />
-          <Text style={[styles.typeText, { color: '#005bbf' }]}>{template}</Text>
+        <View style={styles.typeBadge}>
+          <MaterialIcons name="assignment-ind" size={16} color="#005bbf" />
+          <Text style={styles.typeText}>Assign Template to Project</Text>
         </View>
 
-        <View style={{ marginBottom: 24, backgroundColor: '#f8f9fa', padding: 16, borderRadius: 16, borderWidth: 1, borderColor: '#e1e3e8' }}>
-          <Text style={{ fontSize: 11, fontWeight: '800', color: '#525f73', marginBottom: 6, letterSpacing: 1 }}>SELECT TEMPLATE</Text>
-          <View style={[styles.inputBox, { marginBottom: 16, backgroundColor: '#fff' }]}>
-            <MaterialIcons name="description" size={18} color="#727785" style={styles.inputIcon} />
-            <TextInput style={{ flex: 1, color: '#191c1d' }} placeholder="Select Template" value={template} onChangeText={setTemplate} />
+        {/* Template Dropdown/Picker */}
+        <Text style={{ fontSize: 12, fontWeight: '700', color: '#525f73', marginBottom: 6 }}>SELECT TEMPLATE</Text>
+        <TouchableOpacity 
+          style={[styles.inputBox, { justifyContent: 'space-between' }]} 
+          onPress={() => setShowPicker(true)}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <MaterialIcons name="description" size={18} color="#727785" style={{ marginRight: 8 }} />
+            <Text style={{ color: selectedTemplate ? '#191c1d' : '#727785' }}>
+              {selectedTemplate ? selectedTemplate.title : 'Tap to select...'}
+            </Text>
           </View>
+          <MaterialIcons name="arrow-drop-down" size={24} color="#005bbf" />
+        </TouchableOpacity>
 
-          <Text style={{ fontSize: 11, fontWeight: '800', color: '#525f73', marginBottom: 6, letterSpacing: 1 }}>PROJECT NAME</Text>
-          <View style={[styles.inputBox, { marginBottom: 16, backgroundColor: '#fff' }]}>
-            <MaterialIcons name="business" size={18} color="#727785" style={styles.inputIcon} />
-            <TextInput style={{ flex: 1, color: '#191c1d' }} placeholder="Project Name" value={projName} onChangeText={setProjName} />
-          </View>
-
-          <Text style={{ fontSize: 11, fontWeight: '800', color: '#525f73', marginBottom: 6, letterSpacing: 1 }}>PROJECT ASSIGN TO</Text>
-          <View style={[styles.inputBox, { marginBottom: 16, backgroundColor: '#fff' }]}>
-            <MaterialIcons name="person" size={18} color="#727785" style={styles.inputIcon} />
-            <TextInput style={{ flex: 1, color: '#191c1d' }} placeholder="Inspector / User Name" value={assignee} onChangeText={setAssignee} />
-          </View>
-
-          <Text style={{ fontSize: 11, fontWeight: '800', color: '#525f73', marginBottom: 6, letterSpacing: 1 }}>DUE DATE</Text>
-          <View style={[styles.inputBox, { marginBottom: 4, backgroundColor: '#fff' }]}>
-            <MaterialIcons name="event" size={18} color="#727785" style={styles.inputIcon} />
-            <TextInput style={{ flex: 1, color: '#191c1d' }} placeholder="Due Date" value={dueDate} onChangeText={setDueDate} />
-          </View>
+        {/* Project Name */}
+        <Text style={{ fontSize: 12, fontWeight: '700', color: '#525f73', marginTop: 16, marginBottom: 6 }}>PROJECT NAME</Text>
+        <View style={styles.inputBox}>
+          <MaterialIcons name="business" size={18} color="#727785" style={{ marginRight: 8 }} />
+          <TextInput
+            style={{ flex: 1, color: '#191c1d' }}
+            placeholder="e.g. Project Alpha"
+            value={projectName}
+            onChangeText={setProjectName}
+          />
         </View>
 
-        {loading ? (
-          <ActivityIndicator size="large" color="#005bbf" style={{ marginTop: 40 }} />
-        ) : (
-          checklistItems.map((item) => {
-            const status = results[item.id];
-            return (
-              <View key={item.id} style={styles.card}>
-                <View style={styles.cardTop}>
-                  <View style={styles.itemLeft}>
-                    <View style={[styles.itemIcon, { backgroundColor: '#e8f0fe' }]}>
-                      <MaterialIcons name={item.icon || 'check-box-outline-blank'} size={20} color="#005bbf" />
-                    </View>
-                    <Text style={[styles.itemLabel, { color: '#191c1d' }]}>{item.label}</Text>
-                  </View>
-                  <View style={[styles.buttons, { flexWrap: 'wrap', justifyContent: 'flex-end', gap: 6 }]}>
-                    <TouchableOpacity
-                      style={[styles.statusBtn, { minWidth: 60 }, status === 'Yes' && { backgroundColor: '#006d3a', borderColor: '#006d3a' }]}
-                      onPress={() => setStatus(item.id, 'Yes')}
-                    >
-                      <Text style={[styles.btnLabel, { color: status === 'Yes' ? '#fff' : '#006d3a' }]}>Yes</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.statusBtn, { minWidth: 60 }, status === 'No' && { backgroundColor: '#ba1a1a', borderColor: '#ba1a1a' }]}
-                      onPress={() => setStatus(item.id, 'No')}
-                    >
-                      <Text style={[styles.btnLabel, { color: status === 'No' ? '#fff' : '#ba1a1a' }]}>No</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.statusBtn, { minWidth: 60 }, status === 'N/A' && { backgroundColor: '#525f73', borderColor: '#525f73' }]}
-                      onPress={() => setStatus(item.id, 'N/A')}
-                    >
-                      <Text style={[styles.btnLabel, { color: status === 'N/A' ? '#fff' : '#525f73' }]}>N/A</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
+        {/* Assigned To */}
+        <Text style={{ fontSize: 12, fontWeight: '700', color: '#525f73', marginTop: 16, marginBottom: 6 }}>ASSIGNED TO</Text>
+        <View style={styles.inputBox}>
+          <MaterialIcons name="person" size={18} color="#727785" style={{ marginRight: 8 }} />
+          <TextInput
+            style={{ flex: 1, color: '#191c1d' }}
+            placeholder="e.g. Inspector Jimmy"
+            value={assignedTo}
+            onChangeText={setAssignedTo}
+          />
+        </View>
 
-                {status === 'No' && (
-                  <View style={{ marginTop: 12, borderTopWidth: 1, borderTopColor: '#f1f3f4', paddingTop: 12 }}>
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#ba1a1a', marginBottom: 8 }}>DEFECT DETAILS REQUIRED</Text>
+        {/* Due Date */}
+        <Text style={{ fontSize: 12, fontWeight: '700', color: '#525f73', marginTop: 16, marginBottom: 6 }}>DUE DATE</Text>
+        <View style={styles.inputBox}>
+          <MaterialIcons name="event" size={18} color="#727785" style={{ marginRight: 8 }} />
+          <TextInput
+            style={{ flex: 1, color: '#191c1d' }}
+            placeholder="e.g. 2026-04-20"
+            value={dueDate}
+            onChangeText={setDueDate}
+          />
+        </View>
 
-                    <TouchableOpacity
-                      style={[styles.inputBox, { marginBottom: 8, height: 40, paddingHorizontal: 12, backgroundColor: '#fff8f7' }]}
-                      onPress={() => setShowDefectPicker(showDefectPicker === item.id ? null : item.id)}
-                    >
-                      <Text style={{ flex: 1, color: defectSelections[item.id] ? '#191c1d' : '#ba1a1a', fontSize: 14 }}>
-                        {defectSelections[item.id] || 'Select Defect Type...'}
-                      </Text>
-                      <MaterialIcons name="arrow-drop-down" size={24} color="#ba1a1a" />
-                    </TouchableOpacity>
-
-                    {showDefectPicker === item.id && (
-                      <View style={{ backgroundColor: '#fff', borderRadius: 8, borderWidth: 1, borderColor: '#ffdad6', marginBottom: 12, overflow: 'hidden' }}>
-                        {defectTypes.map((dt) => (
-                          <TouchableOpacity
-                            key={dt}
-                            style={{ padding: 12, borderBottomWidth: 1, borderBottomColor: '#f1f3f4', backgroundColor: defectSelections[item.id] === dt ? '#ffdad6' : '#fff' }}
-                            onPress={() => { setDefectSelections({ ...defectSelections, [item.id]: dt }); setShowDefectPicker(null); }}
-                          >
-                            <Text style={{ color: '#191c1d', fontSize: 13 }}>{dt}</Text>
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                    )}
-
-                    <TextInput
-                      style={[styles.commentInput, { backgroundColor: '#fff8f7', borderColor: '#ffdad6', color: '#191c1d' }]}
-                      placeholder="Describe the defect..."
-                      placeholderTextColor="#ba1a1a80"
-                      value={comments[item.id]}
-                      onChangeText={(t) => setComments((prev) => ({ ...prev, [item.id]: t }))}
-                    />
-                  </View>
-                )}
-              </View>
-            );
-          })
-        )}
-
-        {!loading && (
-          <TouchableOpacity style={[styles.submitBtn, { backgroundColor: '#005bbf', shadowColor: '#005bbf' }]} onPress={handleSubmit} activeOpacity={0.85}>
-            <Text style={styles.submitBtnText}>Submit Inspection</Text>
-            <MaterialIcons name="send" size={20} color="#fff" />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          style={[styles.submitBtn, { marginTop: 32, backgroundColor: submitting ? '#8ca8c5' : '#005bbf' }]}
+          onPress={handleSubmit}
+          disabled={submitting}
+        >
+          {submitting ? <ActivityIndicator color="#fff" /> : <MaterialIcons name="check-circle" size={20} color="#fff" />}
+          <Text style={styles.submitBtnText}>{submitting ? 'Submitting...' : 'Submit Inspection'}</Text>
+        </TouchableOpacity>
       </ScrollView>
+
+      {/* Template Picker Modal */}
+      <Modal visible={showPicker} transparent animationType="slide">
+        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <View style={{ backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '60%' }}>
+            <View style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: '#f1f3f4', flexDirection: 'row', justifyContent: 'space-between' }}>
+              <Text style={{ fontSize: 16, fontWeight: '800' }}>Select Template</Text>
+              <TouchableOpacity onPress={() => setShowPicker(false)}>
+                <MaterialIcons name="close" size={24} color="#727785" />
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={templates}
+              keyExtractor={item => item.id.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity 
+                  style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: '#f1f3f4', backgroundColor: selectedTemplate?.id === item.id ? '#e8f0fe' : '#fff' }}
+                  onPress={() => { setSelectedTemplate(item); setShowPicker(false); }}
+                >
+                  <Text style={{ fontSize: 15, color: '#191c1d' }}>{item.title}</Text>
+                  {item.work_type && <Text style={{ fontSize: 12, color: '#727785' }}>{item.work_type}</Text>}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

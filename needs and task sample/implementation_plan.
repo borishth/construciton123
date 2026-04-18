@@ -1,0 +1,142 @@
+# DigiQC Full-Stack Integration: Templates → Checklist → Inspection → Answers
+
+## Overview
+Wire up the 4-screen inspection flow to a FastAPI backend using your **existing** AWS PostgreSQL tables (`templates`, `checklist_items`, `inspections`, `inspection_answers`).  
+The current backend is using a different table set (`checklists`, `checklist_questions`). We will **not** touch those — we'll write new FastAPI endpoints that target your actual production tables.
+
+## User Review Required
+
+> [!IMPORTANT]
+> The existing `inspections.py` endpoint file targets tables called `checklists` and `checklist_questions` which appear to be old/different tables. The new endpoints will target `templates`, `checklist_items`, `inspections`, and `inspection_answers` only. The old file will be **kept intact** — we will register the new router alongside it.
+
+> [!WARNING]
+> **The `Assignchecklist.tsx` screen is being repurposed.** Currently it shows an inline checklist execution UI (Yes/No/NA buttons). The flow you specified says:  
+> - `Assignchecklist` → create an **inspection** linked to a template  
+> - A separate **Checklist Execution page** → save answers  
+> We will make `Assignchecklist` a proper "assign + create inspection" screen, and `ChecklistScreen.tsx` will be the execution (answer-saving) screen.
+
+> [!NOTE]
+> We will add `template_id` and `inspection_id` to navigation param types, and thread them through the entire flow.
+
+---
+
+## Flow Mapping
+
+```
+StartInspectionScreen
+  → POST /api/v1/templates  (creates template, returns template_id)
+  → navigates to EditTemplate with { template_id }
+
+EditTemplateScreen
+  → POST /api/v1/templates/{template_id}/items  (adds checklist_items)
+  → navigates back to StartInspection / to Assign
+
+Assignchecklist
+  → GET /api/v1/templates  (dropdown of all templates)
+  → POST /api/v1/inspections  (creates inspection linked to template_id)
+  → navigates to Checklists with { inspection_id, template_id }
+
+ChecklistScreen (execution)
+  → GET /api/v1/inspections/{inspection_id}/items  (loads checklist_items via template_id)
+  → POST /api/v1/inspections/{inspection_id}/answers  (saves yes/no/na answers)
+  → navigates to ReportSummary
+```
+
+---
+
+## Proposed Changes
+
+### Backend — New Router & Schemas
+
+#### [NEW] `backend/app/api/v1/endpoints/templates.py`
+New FastAPI router for templates CRUD:
+- `GET /templates` — list all templates
+- `POST /templates` — create template (`name`, `work_type`)  → returns `template_id`
+- `GET /templates/{id}/items` — get checklist_items for a template
+- `POST /templates/{id}/items` — add a checklist_item to a template
+
+#### [NEW] `backend/app/api/v1/endpoints/inspections_v2.py`
+New FastAPI router for inspections (new tables only):
+- `GET /inspections-v2` — list inspections
+- `POST /inspections-v2` — create inspection (`template_id`, `project_name`, `assigned_to`, `due_date`)  → returns `inspection_id`
+- `GET /inspections-v2/{id}/items` — join `inspections` + `checklist_items` via `template_id`
+- `POST /inspections-v2/{id}/answers` — upsert into `inspection_answers`
+
+#### [MODIFY] [api.py](file:///home/jimmy/Desktop/Boris/DigiQC/construciton123/backend/app/api/v1/api.py)
+Register the two new routers (`/templates`, `/inspections-v2`) alongside the existing one.
+
+#### [NEW] `backend/app/schemas/template.py`
+Pydantic models for `TemplateCreate`, `TemplateOut`, `ChecklistItemCreate`, `ChecklistItemOut`.
+
+#### [NEW] `backend/app/schemas/inspection_v2.py`
+Pydantic models for `InspectionCreate`, `InspectionOut`, `AnswerCreate`, `AnswerOut`.
+
+---
+
+### Frontend — Navigation Types
+
+#### [MODIFY] [types.ts](file:///home/jimmy/Desktop/Boris/DigiQC/construciton123/DigiQC-cli/src/navigation/types.ts)
+Add `template_id` and `inspection_id` fields to navigation params:
+- `StartInspection` — already has `templateItems`, add `template_id?: number`
+- `EditTemplate` — add `template_id?: number`
+- `Checklists` — add `template_id?: number`, `inspection_id?: number`
+
+---
+
+### Frontend — Service Layer
+
+#### [NEW] `src/services/template.service.ts`
+API calls:
+- `getTemplates()` → `GET /templates`
+- `createTemplate(name, workType)` → `POST /templates`
+- `addChecklistItems(templateId, questions[])` → `POST /templates/{id}/items`
+- `getTemplateItems(templateId)` → `GET /templates/{id}/items`
+
+#### [MODIFY] [inspection.service.ts](file:///home/jimmy/Desktop/Boris/DigiQC/construciton123/DigiQC-cli/src/services/inspection.service.ts)
+Add:
+- `createInspection(templateId, projectName, assignedTo, dueDate)` → `POST /inspections-v2`
+- `getInspectionItems(inspectionId)` → `GET /inspections-v2/{id}/items`
+- `submitAnswers(inspectionId, answers[])` → `POST /inspections-v2/{id}/answers`
+
+---
+
+### Frontend — Screens
+
+#### [MODIFY] [StartInspectionScreen.tsx](file:///home/jimmy/Desktop/Boris/DigiQC/construciton123/DigiQC-cli/src/screens/StartInspectionScreen.tsx)
+- On "Create Template" button press: call `templateService.createTemplate(workType, checklistTitle)`
+- On success: navigate to `EditTemplate` with `{ template_id, items: [] }`
+- Remove the old hard-coded questions array (or keep as fallback UI)
+- "Proceed to Assign" goes to `Assignchecklist` (renamed from `Checklists`) — not used for execution
+
+#### [MODIFY] [EditTemplateScreen.tsx](file:///home/jimmy/Desktop/Boris/DigiQC/construciton123/DigiQC-cli/src/screens/EditTemplateScreen.tsx)
+- Receive `template_id` from route params
+- On "Save Template" press: call `templateService.addChecklistItems(template_id, questions[])`
+- On success: navigate back to `StartInspection` with `{ template_id }` so user can proceed to assign
+
+#### [MODIFY] [Assignchecklist.tsx](file:///home/jimmy/Desktop/Boris/DigiQC/construciton123/DigiQC-cli/src/screens/Assignchecklist.tsx)
+- On mount: load `GET /templates` and display as a Picker / dropdown
+- Fields: template (dropdown), project name, assigned to, due date
+- On "Create Inspection": POST to `/inspections-v2`
+- On success: navigate to `Checklists` (ChecklistScreen) with `{ inspection_id, template_id }`
+- Remove inline Yes/No question execution from this screen
+
+#### [MODIFY] [ChecklistScreen.tsx](file:///home/jimmy/Desktop/Boris/DigiQC/construciton123/DigiQC-cli/src/screens/ChecklistScreen.tsx)
+- On mount: load `GET /inspections-v2/{inspection_id}/items` (returns checklist questions)
+- Show Yes / No / N/A buttons per item
+- On "Submit": POST answers to `POST /inspections-v2/{inspection_id}/answers`
+- Navigate to `ReportSummary`
+
+---
+
+## Verification Plan
+
+### Automated
+- Test endpoints with `curl` or Swagger UI at `http://localhost:8000/docs`
+
+### Manual Flow
+1. Open `StartInspectionScreen` → fill Work Type + Title → tap Create Template
+2. Verify template_id in console + navigate to EditTemplate
+3. Add questions → Save → verify items stored in DB  
+4. Go to `Assignchecklist` → confirm template dropdown loads → Create Inspection → verify inspection_id
+5. `ChecklistScreen` loads questions → answer all → Submit → verify `inspection_answers` rows in DB
+6. `ReportSummary` shows correct summary

@@ -4,6 +4,7 @@ module.exports = {
     [
       'module-resolver',
       {
+        cwd: 'packagejson',
         root: ['./'],
         extensions: ['.ios.js', '.android.js', '.js', '.ts', '.tsx', '.json'],
         alias: {
