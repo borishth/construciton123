@@ -21,6 +21,21 @@ export const inspectionService = {
   },
 
   /**
+   * Fetch all created inspections (assignments)
+   */
+  async getAllInspections(): Promise<any[]> {
+    const response = await axios.get(`${API_BASE_URL}/inspections/`);
+    // Map snake_case to camelCase for the frontend if needed
+    return response.data.data.map((item: any) => ({
+      ...item,
+      projectName: item.project_name || item.project || item.site_name,
+      siteName: item.site_name || item.project_name,
+      inspectorName: item.assigned_to,
+      date: item.created_at ? new Date(item.created_at).toLocaleDateString() : 'N/A'
+    }));
+  },
+
+  /**
    * Page 4 (Step 1): Load execution questions
    */
   async getExecutionItems(inspectionId: string): Promise<InspectionItem[]> {
@@ -29,13 +44,16 @@ export const inspectionService = {
   },
 
   /**
-   * Page 4 (Step 2): Save single answer
+   * Page 4 (Step 2): Save single answer (using bulk endpoint for UPSERT support)
    */
   async saveAnswer(inspectionId: string, itemId: string, answer: string): Promise<any> {
-    const response = await axios.post(`${API_BASE_URL}/inspection-answers/`, {
-      inspection_id: inspectionId,
-      checklist_item_id: itemId,
-      answer: answer.toLowerCase()
+    const mappedAnswer = answer.toLowerCase() === 'n/a' ? 'na' : answer.toLowerCase();
+    
+    const response = await axios.post(`${API_BASE_URL}/inspections/${inspectionId}/answers`, {
+      answers: [{
+        checklist_item_id: itemId,
+        answer: mappedAnswer
+      }]
     });
     return response.data;
   }

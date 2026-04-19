@@ -46,7 +46,17 @@ export default function InspectionsScreen() {
           inspections.map((item) => {
             const cfg = STATUS_CONFIG[item.status] ?? STATUS_CONFIG['PENDING'];
             return (
-              <View key={item.id} style={[styles.card, { borderLeftColor: cfg.border }]}>
+              <TouchableOpacity 
+                key={item.id} 
+                style={[styles.card, { borderLeftColor: cfg.border }]}
+                activeOpacity={0.7}
+                onPress={() => navigation.navigate('ChecklistExecution', {
+                  inspection_id: item.id,
+                  projectName: item.projectName,
+                  inspectorName: item.inspectorName,
+                  date: item.date
+                })}
+              >
                 <View style={styles.cardTop}>
                   <View style={{ flex: 1, marginRight: 10 }}>
                     <Text style={[styles.siteTitle, { color: '#191c1d' }]}>{item.projectName || item.siteName}</Text>
@@ -74,18 +84,21 @@ export default function InspectionsScreen() {
                 {item.status === 'FAIL' && (
                   <TouchableOpacity
                     style={styles.serviceBtn}
-                    onPress={() => navigation.navigate('ServiceRequest', { 
-                      siteName: item.site, 
-                      inspectionType: item.type, 
-                      date: item.date, 
-                      reportId: item.id 
-                    })}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      navigation.navigate('ServiceRequest', { 
+                        siteName: item.site, 
+                        inspectionType: item.type, 
+                        date: item.date, 
+                        reportId: item.id 
+                      });
+                    }}
                   >
                     <MaterialIcons name="build" size={13} color="#fff" />
                     <Text style={styles.serviceBtnText}>Create Service Request</Text>
                   </TouchableOpacity>
                 )}
-              </View>
+              </TouchableOpacity>
             );
           })
         )}

@@ -50,10 +50,35 @@ export const styles = StyleSheet.create({
   },
   inputIcon: { marginRight: 8 },
   submitBtn: {
+    flex: 1,
     flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
-    borderRadius: 16, height: 56, marginTop: 12, gap: 10,
+    borderRadius: 16, height: 50, gap: 10,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.25, shadowRadius: 12, elevation: 6,
   },
-  submitBtnText: { fontSize: 16, fontWeight: '800', color: '#fff' },
+  submitBtnText: { fontSize: 13, fontWeight: '800', color: '#fff' },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center', alignItems: 'center', padding: 20
+  },
+  modalContent: {
+    backgroundColor: '#fff', borderRadius: 24, padding: 30,
+    width: '100%', alignItems: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1, shadowRadius: 20, elevation: 10
+  },
+  modalIcon: {
+    width: 80, height: 80, borderRadius: 40,
+    backgroundColor: '#e8f5e9', justifyContent: 'center', alignItems: 'center',
+    marginBottom: 20
+  },
+  modalTitle: { fontSize: 24, fontWeight: '800', color: '#191c1d', marginBottom: 10 },
+  modalText: { fontSize: 16, color: '#525f73', textAlign: 'center', marginBottom: 30, lineHeight: 24 },
+  modalBtn: {
+    backgroundColor: '#005bbf', paddingHorizontal: 30, height: 50,
+    borderRadius: 15, justifyContent: 'center', alignItems: 'center',
+    width: '100%'
+  },
+  modalBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' }
 });

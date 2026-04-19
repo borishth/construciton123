@@ -20,9 +20,10 @@ def list_inspections():
     try:
         cols = _get_table_columns(cur, "inspections")
         # Find the priority / name column
-        name_col = next((c for c in ["project_name", "project", "site_name"] if c in cols), "id")
+        name_col = next((c for c in ["project_name", "project"] if c in cols), "id")
+        inspector_col = next((c for c in ["assigned_to", "inspector_name"] if c in cols), "NULL")
         
-        cur.execute(f"SELECT id, {name_col}, status, created_at FROM inspections ORDER BY created_at DESC")
+        cur.execute(f"SELECT id, {name_col}, status, created_at, {inspector_col} FROM inspections ORDER BY created_at DESC")
         rows = cur.fetchall()
         
         data = []
@@ -31,7 +32,8 @@ def list_inspections():
                 "id": str(r[0]),
                 "project_name": r[1],
                 "status": r[2],
-                "created_at": str(r[3]) if r[3] else None
+                "created_at": str(r[3]) if r[3] else None,
+                "assigned_to": r[4]
             })
         return {"success": True, "data": data}
     except Exception as e:
@@ -110,13 +112,15 @@ def get_inspection_items(inspection_id: str):
         ans_cols = _get_table_columns(cur, "inspection_answers")
         has_ans = "answer" in ans_cols
         
+        order_col = next((c for c in ["order_index", "item_order", "id"] if c in cols), "id")
+        
         query = f"""
             SELECT ci.id, ci.{text_col}
             {", ia.answer" if has_ans else ""}
             FROM checklist_items ci
             LEFT JOIN inspection_answers ia ON ia.checklist_item_id = ci.id AND ia.inspection_id = %s
             WHERE ci.template_id = %s
-            ORDER BY ci.id
+            ORDER BY ci.{order_col}
         """
         cur.execute(query, (inspection_id, template_id))
         rows = cur.fetchall()
@@ -137,9 +141,9 @@ def get_inspection_items(inspection_id: str):
 
 @router.post("/{inspection_id}/answers", response_model=dict)
 def submit_answers(inspection_id: str, payload: AnswersBulkCreate):
-    print("submit_answers HIT")
-    print("inspection_id:", inspection_id)
-    print("payload:", payload)
+    print("submit_answers HIT")  #testing
+    print("inspection_id:", inspection_id) #testing
+    print("payload:", payload)   #testing
     """Bulk upsert answers for an inspection."""
     conn = get_connection()
     cur = conn.cursor()
@@ -148,6 +152,7 @@ def submit_answers(inspection_id: str, payload: AnswersBulkCreate):
         has_remark = "remark" in ans_cols
         
         for ans in payload.answers:
+            print("answer item:", ans) #testing
             # Simple check/upsert logic
             cur.execute(
                 "SELECT id FROM inspection_answers WHERE inspection_id = %s AND checklist_item_id = %s",

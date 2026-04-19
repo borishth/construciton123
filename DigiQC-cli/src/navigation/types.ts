@@ -53,7 +53,12 @@ export type RootStackParamList = {
   Reports: undefined;
   Inspections: undefined;
   NCRCreate: undefined;
-  ServiceRequest: undefined;
+  ServiceRequest: {
+    siteName?: string;
+    inspectionType?: string;
+    date?: string;
+    reportId?: string;
+  };
   Service: undefined;
   DailyReport: undefined;
   Notifications: undefined;

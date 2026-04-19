@@ -1,61 +1,37 @@
-# Separate Styles from Component Logic
+# Implementation Plan - Inspection Answering Flow
 
-## Goal
-Make the codebase clean and professional by extracting all `StyleSheet.create()` blocks into dedicated style files under a `styles/` directory. Each screen file will only contain component logic (imports, state, handlers, JSX).
+The goal is to implement a flow where users can view a list of created inspections (projects), select one, and then fill out its checklist (Yes/No/N/A).
 
-## Proposed Structure
-```
-app/
-├── (main)/
-│   ├── _layout.tsx        ← logic only
-│   ├── index.tsx           ← logic only
-│   ├── inspections-tab.tsx ← logic only
-│   ├── service-tab.tsx     ← logic only
-│   ├── yolo-scanner.tsx    ← logic only
-│   └── performance.tsx     ← logic only
-├── start-inspection.tsx    ← logic only
-├── service-request.tsx     ← logic only
-├── checklists.tsx          ← logic only
-├── reports.tsx             ← logic only
-├── inspections.tsx         ← logic only
-├── service.tsx             ← logic only
-├── (auth)/login.tsx        ← logic only
-styles/
-├── main/
-│   ├── layout.styles.ts
-│   ├── home.styles.ts
-│   ├── inspections-tab.styles.ts
-│   ├── service-tab.styles.ts
-│   ├── yolo-scanner.styles.ts
-│   └── performance.styles.ts
-├── start-inspection.styles.ts
-├── service-request.styles.ts
-├── checklists.styles.ts
-├── reports.styles.ts
-├── inspections.styles.ts
-├── service.styles.ts
-└── login.styles.ts
-```
+## Proposed Changes
 
-## Skipped Files (too small to split)
-- [notifications.tsx](file:///f:/DigiQC/DigiQC-mobile/app/notifications.tsx) (~3 styles)
-- [ai-assistant.tsx](file:///f:/DigiQC/DigiQC-mobile/app/ai-assistant.tsx) (~3 styles)
+### [Backend]
+No changes requested, but I will ensure the frontend uses the existing endpoints correctly.
 
-## Pattern
-Each style file will export a single `styles` object:
-```ts
-// styles/main/home.styles.ts
-import { StyleSheet, Dimensions } from 'react-native';
-const { width: SW } = Dimensions.get('window');
-export const styles = StyleSheet.create({ ... });
-```
+### [Frontend - Services]
 
-Each screen file will import it:
-```ts
-// app/(main)/index.tsx
-import { styles } from '@/styles/main/home.styles';
-```
+#### [MODIFY] [inspection.service.ts](file:///home/jimmy/Desktop/Boris/DigiQC/construciton123/DigiQC-cli/src/services/inspection.service.ts)
+- Add `getAllInspections()` to fetch the list of inspections from the backend.
+- (Optional) Update `saveAnswer` to use a more robust endpoint if needed, or ensure the current one handles the user's needs.
 
-## Verification
-- Run `npx expo start` and verify all screens render identically
-- No visual changes — purely a code organization refactor
+### [Frontend - Screens]
+
+#### [MODIFY] [InspectionsScreen.tsx](file:///home/jimmy/Desktop/Boris/DigiQC/construciton123/DigiQC-cli/src/screens/InspectionsScreen.tsx)
+- Wrap inspection cards in `TouchableOpacity`.
+- Implement navigation to `ChecklistExecution`, passing the `inspection_id` and other relevant metadata (Project Name, Date, etc.).
+
+#### [MODIFY] [InspectionsTabScreen.tsx](file:///home/jimmy/Desktop/Boris/DigiQC/construciton123/DigiQC-cli/src/screens/main/InspectionsTabScreen.tsx)
+- Update the "Checklist" quick action button to navigate to `Inspections` (the listing screen) instead of `Checklists` (the template assignment screen). This aligns with the user's requested flow of "View Projects -> Select -> Answer".
+
+#### [MODIFY] [ChecklistScreen.tsx](file:///home/jimmy/Desktop/Boris/DigiQC/construciton123/DigiQC-cli/src/screens/ChecklistScreen.tsx)
+- Ensure the screen correctly initializes with the passed `inspection_id`.
+- Verify the "Finish Inspection" logic correctly navigates to the summary.
+
+## Verification Plan
+
+### Manual Verification
+1.  **Open App**: Navigate to the "Inspections" tab.
+2.  **Click "Checklist"**: Should now open the list of all inspections.
+3.  **Select an Inspection**: Click on a specific inspection card.
+4.  **Answer Checklist**: Mark items as Yes/No/N/A.
+5.  **Save/Finish**: Verify answers are saved to the database and you are navigated to the summary screen.
+6.  **Verify Backend**: Check database logs or use the AI Assistant to confirm the `inspection_answers` table is updated.

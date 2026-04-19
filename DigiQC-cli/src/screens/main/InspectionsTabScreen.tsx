@@ -47,7 +47,7 @@ export default function InspectionsTabScreen() {
 
           <TouchableOpacity
             style={[styles.actionCard, { backgroundColor: t.card, borderColor: t.cardBorder }]}
-            onPress={() => navigation.navigate('Checklists', {})} activeOpacity={0.7}
+            onPress={() => navigation.navigate('Inspections')} activeOpacity={0.7}
           >
             <View style={[styles.actionIcon, { backgroundColor: t.amberSoft }]}>
               <MaterialIcons name="fact-check" size={24} color={t.amber} />

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, TouchableOpacity, ScrollView,
-  ActivityIndicator, Alert,
+  ActivityIndicator, Alert, Modal,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -22,6 +22,7 @@ export default function ChecklistScreen() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<Record<string, boolean>>({});
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
     loadItems();
@@ -31,6 +32,17 @@ export default function ChecklistScreen() {
     try {
       const data = await inspectionService.getExecutionItems(inspection_id);
       setItems(data);
+      
+      // Load initial answers if they exist
+      const initialAnswers: Record<string, string> = {};
+      data.forEach((item: any) => {
+        if (item.answer) {
+          // Sync 'na' from DB to 'n/a' in the UI
+          const uiAnswer = item.answer.toLowerCase() === 'na' ? 'n/a' : item.answer.toLowerCase();
+          initialAnswers[item.id] = uiAnswer;
+        }
+      });
+      setAnswers(initialAnswers);
     } catch (err) {
       Alert.alert('Load Error', 'Failed to fetch checklist questions.');
     } finally {
@@ -40,14 +52,18 @@ export default function ChecklistScreen() {
 
   // ─── Save Answer Action ────────────────────────────────────────────────
   const handleAnswer = async (itemId: string, choice: string) => {
+    const lowerChoice = choice.toLowerCase();
+    
+    // Optimistic Update: Change color immediately in the UI
+    const previousAnswers = { ...answers };
+    setAnswers(prev => ({ ...prev, [itemId]: lowerChoice }));
     setSaving(prev => ({ ...prev, [itemId]: true }));
+
     try {
-      // POST single answer per spec
       await inspectionService.saveAnswer(inspection_id, itemId, choice);
-      
-      // Update local state
-      setAnswers(prev => ({ ...prev, [itemId]: choice }));
     } catch (err: any) {
+      // Rollback if save fails
+      setAnswers(previousAnswers);
       Alert.alert('Error', 'Failed to save answer to database.');
     } finally {
       setSaving(prev => ({ ...prev, [itemId]: false }));
@@ -87,14 +103,15 @@ export default function ChecklistScreen() {
 
               <View style={styles.buttons}>
                 {(['Yes', 'No', 'N/A']).map((opt) => {
-                  const isSelected = answers[item.id] === opt.toLowerCase();
+                  const isSelected = answers[item.id] === opt.toLowerCase() || 
+                                    (opt === 'N/A' && (answers[item.id] === 'n/a' || answers[item.id] === 'na'));
                   const isSaving = saving[item.id];
                   return (
                     <TouchableOpacity
                       key={opt}
                       style={[
                         styles.statusBtn,
-                        isSelected && { backgroundColor: opt === 'Yes' ? '#006d3a' : opt === 'No' ? '#ba1a1a' : '#525f73', borderColor: 'transparent' }
+                        isSelected && { backgroundColor: '#005bbf', borderColor: 'transparent' }
                       ]}
                       onPress={() => !isSaving && handleAnswer(item.id, opt)}
                       disabled={isSaving}
@@ -111,29 +128,60 @@ export default function ChecklistScreen() {
             </View>
           ))}
 
-          {/* Complete Button */}
-          <TouchableOpacity
-            style={[styles.submitBtn, { marginTop: 20, backgroundColor: isComplete ? '#006d3a' : '#b0bec5' }]}
-            onPress={() => {
-              if (!isComplete) {
-                Alert.alert('Incomplete', 'Please answer all questions before finishing.');
-                return;
-              }
-              navigation.navigate('ReportSummary', {
-                reportId: `QC-${Math.floor(Math.random() * 9000) + 1000}`,
-                projectName: projectName || '',
-                inspectorName: inspectorName || '',
-                date: date || '',
-                summary: `Total: ${items.length}, Answered: ${Object.keys(answers).length}`,
-                responses: JSON.stringify(answers)
-              });
-            }}
-          >
-            <MaterialIcons name="send" size={20} color="#fff" />
-            <Text style={styles.submitBtnText}>Finish Inspection</Text>
-          </TouchableOpacity>
+          {/* Action Buttons */}
+          <View style={{ flexDirection: 'row', gap: 12, marginTop: 20 }}>
+            <TouchableOpacity
+              style={[styles.submitBtn, { backgroundColor: '#525f73' }]}
+              onPress={() => setShowSuccessModal(true)}
+            >
+              <MaterialIcons name="event-available" size={18} color="#fff" />
+              <Text style={styles.submitBtnText}>Finished for Today</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.submitBtn, { backgroundColor: isComplete ? '#006d3a' : '#b0bec5' }]}
+              onPress={() => {
+                if (!isComplete) {
+                  Alert.alert('Incomplete', 'Please answer all questions before finishing.');
+                  return;
+                }
+                setShowSuccessModal(true);
+              }}
+            >
+              <MaterialIcons name="done-all" size={18} color="#fff" />
+              <Text style={styles.submitBtnText}>Finished Inspection</Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       )}
+
+      {/* Success Modal */}
+      <Modal
+        visible={showSuccessModal}
+        transparent
+        animationType="fade"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalIcon}>
+              <MaterialIcons name="check" size={40} color="#006d3a" />
+            </View>
+            <Text style={styles.modalTitle}>Thank You!</Text>
+            <Text style={styles.modalText}>
+              Your progress has been recorded successfully. You can return to this project later or start a new one.
+            </Text>
+            <TouchableOpacity
+              style={styles.modalBtn}
+              onPress={() => {
+                setShowSuccessModal(false);
+                navigation.navigate('Inspections');
+              }}
+            >
+              <Text style={styles.modalBtnText}>Go to All Inspections</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
