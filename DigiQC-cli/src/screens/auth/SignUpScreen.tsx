@@ -7,27 +7,37 @@ import { RootStackParamList } from '../../navigation/types';
 import { styles } from '@/styles/login.styles';
 import { API_BASE_URL } from '../../config/api.config';
 
-export default function LoginScreen() {
+export default function SignUpScreen() {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('inspector');
+
+
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert("Error", "Please enter both email and password.");
+  const handleSignUp = async () => {
+    if (!email || !password || !username || !role) {
+      Alert.alert("Error", "Please fill in all required fields.");
       return;
     }
 
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          email,
+          password,
+          username,
+          role,
+          is_active: true
+        }),
       });
 
       const contentType = response.headers.get("content-type");
@@ -37,28 +47,21 @@ export default function LoginScreen() {
       }
 
       if (response.ok) {
-        navigation.reset({ 
-          index: 0, 
-          routes: [{ 
-            name: 'MainTabs',
-            params: { user: data.user }
-          }] 
-        });
+        Alert.alert("Success", "Account created successfully! You can now log in.", [
+          { text: "OK", onPress: () => navigation.reset({ index: 0, routes: [{ name: 'Login' }] }) }
+        ]);
       } else {
-        // Safely extract the error message
-        let errorMessage = "sorry ur identification is wrong please try again letter";
+        let errorMessage = "Could not create account at this time.";
         if (typeof data?.detail === 'string') {
           errorMessage = data.detail;
         } else if (Array.isArray(data?.detail)) {
-          // Format validation errors (like invalid email format)
           errorMessage = data.detail.map((err: any) => err.msg).join('\n');
         }
-
-        Alert.alert("Identification Failed", errorMessage);
+        Alert.alert("Sign Up Failed", errorMessage);
       }
     } catch (error) {
-      console.error("Login Error:", error);
-      Alert.alert("Connection Error", "Could not connect to the server. Please check your internet or server status.");
+      console.error("Sign Up Error:", error);
+      Alert.alert("Connection Error", "Could not connect to the server.");
     } finally {
       setLoading(false);
     }
@@ -69,7 +72,6 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      {/* Background Blobs */}
       <View style={styles.blobContainer}>
         <View style={styles.blob1} />
         <View style={styles.blob2} />
@@ -78,25 +80,33 @@ export default function LoginScreen() {
 
       <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
         <View style={styles.mainContent}>
-          {/* Brand Identity */}
-          <View style={styles.header}>
-            <View style={[styles.iconContainer, { backgroundColor: 'transparent', overflow: 'hidden', borderRadius: 20 }]}>
-              <Image
-                source={require('../../assets/images/logo.png')}
-                style={{ width: '100%', height: '100%', resizeMode: 'cover' }}
-              />
-            </View>
+
+          <View style={[styles.header, { marginBottom: 20 }]}>
             <Text style={styles.title}>
               Construct<Text style={{ color: '#f04313' }}>Hub</Text>
             </Text>
-            <Text style={[styles.subtitle, { color: '#f04313' }]}>PRECISION INSPECTION MANAGEMENT</Text>
           </View>
 
-          {/* Login Card */}
           <View style={styles.card}>
             <View style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>Welcome Back</Text>
-              <Text style={styles.cardSubtitle}>Access your field directives and site reports.</Text>
+              <Text style={styles.cardTitle}>Create Account</Text>
+              <Text style={styles.cardSubtitle}>Register to access field directives.</Text>
+            </View>
+
+            {/* Username Input */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>USERNAME</Text>
+              <View style={styles.inputContainer}>
+                <MaterialIcons name="person" size={18} color="rgba(114, 119, 133, 0.6)" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="johndoe"
+                  placeholderTextColor="rgba(114, 119, 133, 0.4)"
+                  value={username}
+                  onChangeText={setUsername}
+                  autoCapitalize="none"
+                />
+              </View>
             </View>
 
             {/* Email Input */}
@@ -139,46 +149,72 @@ export default function LoginScreen() {
               </View>
             </View>
 
+            {/* Role Selection */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>ACCOUNT TYPE</Text>
+              <View style={{ flexDirection: 'row', marginTop: 4 }}>
+                <TouchableOpacity
+                  style={[
+                    { flex: 1, paddingVertical: 14, borderRadius: 10, borderWidth: 1, borderColor: '#e5e7eb', alignItems: 'center', backgroundColor: '#ffffff', marginRight: 6 },
+                    role === 'inspector' && { backgroundColor: '#005bbf', borderColor: '#005bbf' }
+                  ]}
+                  onPress={() => setRole('inspector')}
+                  activeOpacity={0.8}
+                >
+                  <MaterialIcons name="fact-check" size={20} color={role === 'inspector' ? '#ffffff' : '#727785'} style={{ marginBottom: 6 }} />
+                  <Text style={[
+                    { fontSize: 13, fontWeight: '600', color: '#4b5563' },
+                    role === 'inspector' && { color: '#ffffff' }
+                  ]}>
+                    Inspector
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    { flex: 1, paddingVertical: 14, borderRadius: 10, borderWidth: 1, borderColor: '#e5e7eb', alignItems: 'center', backgroundColor: '#ffffff', marginLeft: 6 },
+                    role === 'client' && { backgroundColor: '#005bbf', borderColor: '#005bbf' }
+                  ]}
+                  onPress={() => setRole('client')}
+                  activeOpacity={0.8}
+                >
+                  <MaterialIcons name="business-center" size={20} color={role === 'client' ? '#ffffff' : '#727785'} style={{ marginBottom: 6 }} />
+                  <Text style={[
+                    { fontSize: 13, fontWeight: '600', color: '#4b5563' },
+                    role === 'client' && { color: '#ffffff' }
+                  ]}>
+                    Client
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+
+
             <TouchableOpacity
               style={[styles.primaryButton, loading && { opacity: 0.7 }]}
-              onPress={handleLogin}
+              onPress={handleSignUp}
               activeOpacity={0.8}
               disabled={loading}
             >
               {loading ? (
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Text style={[styles.primaryButtonText, { marginRight: 10 }]}>Signing In...</Text>
-                </View>
+                <Text style={styles.primaryButtonText}>Processing...</Text>
               ) : (
-                <Text style={styles.primaryButtonText}>Sign In</Text>
+                <Text style={styles.primaryButtonText}>Create Account</Text>
               )}
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.outlineButton}
-              onPress={() => navigation.navigate('SignUp')}
+              style={[styles.outlineButton, { marginTop: 16 }]}
+              onPress={() => navigation.goBack()}
               activeOpacity={0.8}
             >
-              <Text style={styles.outlineButtonText}>Create Account</Text>
+              <Text style={styles.outlineButtonText}>Back to Sign In</Text>
             </TouchableOpacity>
 
-            <View style={styles.divider} />
-          </View>
-
-          {/* Footer */}
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>
-              © 2026 ConstructHub.{'\n'}Trusted by 10,000+ Site Architects globally.
-            </Text>
-            <View style={styles.footerLinks}>
-              <TouchableOpacity><Text style={styles.footerLinkText}>PRIVACY POLICY</Text></TouchableOpacity>
-              <TouchableOpacity><Text style={styles.footerLinkText}>TERMS OF SERVICE</Text></TouchableOpacity>
-            </View>
           </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
-
-

@@ -9,6 +9,7 @@ import MainTabNavigator from './MainTabNavigator';
 
 // Screens
 import LoginScreen from '@/screens/auth/LoginScreen';
+import SignUpScreen from '@/screens/auth/SignUpScreen';
 import StartInspectionScreen from '@/screens/StartInspectionScreen';
 import Assignchecklist from '@/screens/Assignchecklist';
 import ChecklistScreen from '@/screens/ChecklistScreen';
@@ -37,6 +38,7 @@ export function RootNavigator() {
       }}
     >
       <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="SignUp" component={SignUpScreen} />
       <Stack.Screen name="MainTabs" component={MainTabNavigator} />
 
       <Stack.Screen name="StartInspection" component={StartInspectionScreen} />

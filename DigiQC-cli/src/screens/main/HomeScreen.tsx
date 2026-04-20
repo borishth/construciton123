@@ -9,10 +9,12 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppTheme } from '@/hooks/use-app-theme';
 import { styles } from '@/styles/main/home.styles';
+import { BASE_URL } from '@/config/api.config';
 
-export default function HomeScreen() {
+export default function HomeScreen({ route }: any) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const t = useAppTheme();
+  const { user } = route.params || {};
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -26,7 +28,7 @@ export default function HomeScreen() {
   const loadReports = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://192.168.1.7:8001/test-read');
+      const res = await fetch(`${BASE_URL}/test-read`);
       const json = await res.json();
       setReports(json.data || []);
     } catch (err) {
@@ -56,9 +58,9 @@ export default function HomeScreen() {
               </View>
             </View>
             <View>
-              <Text style={[styles.roleText, { color: t.textSecondary }]}>Field Director</Text>
+              <Text style={[styles.roleText, { color: t.textSecondary }]}>{user?.role || 'Field Director'}</Text>
               <Text style={[styles.brandText, { color: t.textPrimary }]}>
-                Digi<Text style={{ color: t.red }}>QC</Text>
+                Construct<Text style={{ color: t.blue }}>hub</Text>
               </Text>
             </View>
           </View>
@@ -74,7 +76,7 @@ export default function HomeScreen() {
         {/* Hero */}
         <View style={[styles.heroCard, { backgroundColor: t.card, borderColor: t.cardBorder }]}>
           <View style={[styles.heroGlow, { backgroundColor: t.glow }]} />
-          <Text style={[styles.heroGreeting, { color: t.textPrimary }]}>Hello, Inspector</Text>
+          <Text style={[styles.heroGreeting, { color: t.textPrimary }]}>Hello, {user?.username || 'Inspector'}</Text>
           <Text style={[styles.heroSubtext, { color: t.textSecondary }]}>
             Ready for today's structural audits at Site-B?
           </Text>
@@ -165,3 +167,5 @@ export default function HomeScreen() {
     </View>
   );
 }
+
+

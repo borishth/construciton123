@@ -1,5 +1,7 @@
 from fastapi import APIRouter
 from app.api.v1.endpoints import inspections, templates, checklist_items, inspection_answers
+from app.api.v1.endpoints import auth
+
 
 api_router = APIRouter()
 
@@ -15,5 +17,6 @@ api_router.include_router(inspections.router, prefix="/inspections", tags=["insp
 # Page 4: Execution (Saving Answers)
 api_router.include_router(inspection_answers.router, prefix="/inspection-answers", tags=["inspection_answers"])
 
-# Legacy / Legacy inspection_v2 can be removed or kept as local imports if needed, 
-# but following the spec exactly now.
+
+
+api_router.include_router(auth.router, prefix="/auth", tags=["Auth"])

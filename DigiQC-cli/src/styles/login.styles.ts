@@ -46,18 +46,14 @@ export const styles = StyleSheet.create({
     fontSize: 10, fontWeight: '700', color: '#525f73',
     letterSpacing: 1.5, marginBottom: 8, marginLeft: 4,
   },
-  phoneInputRow: { flexDirection: 'row', gap: 8 },
-  countryCodeContainer: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#f3f4f5', borderRadius: 16, paddingHorizontal: 12, height: 56, width: 96,
-  },
-  countryCodeInput: { flex: 1, height: '100%', fontSize: 14, color: '#191c1d', marginLeft: 4 },
-  phoneNumberContainer: {
-    flex: 1, flexDirection: 'row', alignItems: 'center',
+
+  inputContainer: {
+    width: '100%', flexDirection: 'row', alignItems: 'center',
     backgroundColor: '#f3f4f5', borderRadius: 16, paddingHorizontal: 16, height: 56,
   },
+  input: { flex: 1, height: '100%', fontSize: 16, color: '#191c1d' },
   inputIcon: { marginRight: 8 },
-  phoneInput: { flex: 1, height: '100%', fontSize: 16, color: '#191c1d' },
+
   primaryButton: {
     backgroundColor: '#005bbf', borderRadius: 16, height: 56,
     alignItems: 'center', justifyContent: 'center', marginTop: 16,
@@ -65,6 +61,11 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.2, shadowRadius: 15, elevation: 6,
   },
   primaryButtonText: { color: '#ffffff', fontSize: 16, fontWeight: '700' },
+  outlineButton: {
+    borderColor: '#005bbf', borderWidth: 1, borderRadius: 16, height: 56,
+    alignItems: 'center', justifyContent: 'center', marginTop: 12,
+  },
+  outlineButtonText: { color: '#005bbf', fontSize: 16, fontWeight: '700' },
   divider: {
     height: 1, backgroundColor: 'rgba(193, 198, 214, 0.1)', marginTop: 32, marginBottom: 24,
   },

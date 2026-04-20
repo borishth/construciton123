@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List
 
 class InspectionAnswerCreate(BaseModel):
@@ -15,5 +15,4 @@ class InspectionAnswerResponse(BaseModel):
     checklist_item_id: str
     answer: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

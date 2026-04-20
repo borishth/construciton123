@@ -16,8 +16,9 @@ import { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-export default function MainTabNavigator() {
+export default function MainTabNavigator({ route }: any) {
   const t = useAppTheme();
+  const user = route.params?.user;
 
   return (
     <View style={{ flex: 1, backgroundColor: t.bg }}>
@@ -40,6 +41,7 @@ export default function MainTabNavigator() {
         <Tab.Screen
           name="Home"
           component={HomeScreen}
+          initialParams={{ user }}
           options={{
             title: 'Home',
             tabBarIcon: ({ color, focused }) => (

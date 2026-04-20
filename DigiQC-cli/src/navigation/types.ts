@@ -1,5 +1,5 @@
 export type MainTabParamList = {
-  Home: undefined;
+  Home: { user?: { username: string; role: string; email: string } };
   Projects: undefined;
   ServiceTab: undefined;
   AIAssistant: undefined;
@@ -9,7 +9,8 @@ export type MainTabParamList = {
 
 export type RootStackParamList = {
   Login: undefined;
-  MainTabs: undefined;
+  SignUp: undefined;
+  MainTabs: { user?: { username: string; role: string; email: string } };
 
   // Page 1
   StartInspection: {

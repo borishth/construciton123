@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 
 class ChecklistItemCreate(BaseModel):
@@ -14,8 +14,7 @@ class ChecklistItemOut(BaseModel):
     order_index: Optional[int] = None
     answer_type: Optional[str] = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ChecklistItemBulkCreate(BaseModel):
     items: List[ChecklistItemCreate]

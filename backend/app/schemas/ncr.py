@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, List
 
 class NCRBase(BaseModel):
@@ -17,5 +17,4 @@ class NCR(NCRBase):
     id: str
     photos: List[str] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 
@@ -17,8 +17,7 @@ class InspectionResponse(BaseModel):
     status: Optional[str] = "PENDING"
     created_at: Optional[datetime] = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class AnswerCreate(BaseModel):
     checklist_item_id: str
